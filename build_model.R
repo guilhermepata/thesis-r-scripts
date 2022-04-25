@@ -26,6 +26,7 @@ data_frame$Group = relevel(data_frame$Phenotype, ref=3)
 data_frame <- within(data_frame, Group <- factor(Phenotype:Protocol))
 data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:NoSwitch')
 data_frame <- data_frame[! is.na(data_frame$Asym),]
+data_frame <- data_frame[data_frame$Protocol == 'Switch',]
 
 data.total_frame <- data_frame
 data.split <- data_frame[data_frame$Phase == "Split",]
@@ -34,7 +35,7 @@ data.baseline <- data_frame[data_frame$Phase == "Baseline",]
 data.washout <- data_frame[data_frame$Phase == "Washout",]
 
 
-model.equation <- 'Asym ~ Num * Session * Group + (1 + Num| Animal)'
+model.equation <- 'Asym ~ Num * Session + (1 + Num| Animal)'
 
 model.split<-lmer(model.equation, data=data.split, REML= "true")
 

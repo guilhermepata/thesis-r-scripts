@@ -5,6 +5,28 @@
 
 data.split.initial.error = as.data.frame(ggpredict(model.split, terms = c("Session", "Num [0]", "Group")))
 
+
+to.predict = data.frame(Num = c(), Group = c(), Session = c())
+for (session in unique(data.split$Session)) {
+  df.aux = data.frame(Num = 0,
+                      Group = "NotAtaxic:Switch" ,
+                      Session = session
+                      )
+  to.predict <- rbind(to.predict, df.aux)
+}
+
+fit <- predict(model.split, newdata = to.predict, re.form = ~0)
+to.predict <- cbind(to.predict, fit)
+
+to.predict.animals = filter(data.split, Num==0 & Group=="NotAtaxic:Switch")
+fit <- predict(model.split, newdata = to.predict.animals)
+to.predict.animals <- cbind(to.predict.animals, fit)
+
+group_means <- to.predict.animals %>%
+  group_by(Num, Group, Session) %>%
+  summarise(Mean = std.error(fit))
+
+
 data.split.initial.error <-
   rename(
     data.split.initial.error,

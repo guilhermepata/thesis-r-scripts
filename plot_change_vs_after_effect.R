@@ -27,7 +27,7 @@ change.over.split.std.error <- sqrt(data.split.final.error[data.split.final.erro
                                        data.split.initial.error[data.split.final.error$Session == 'S1',]$std.error^2
                                     )
 
-data.washout.after.effect = as.data.frame(ggpredict(model.washout, terms = c("Session", "Num [4]")))
+data.washout.after.effect = as.data.frame(ggpredict(model.washout, terms = c("Session", "Num [0]")))
 data.washout.after.effect <-
   rename(
     data.washout.after.effect,
@@ -36,8 +36,8 @@ data.washout.after.effect <-
   )
 
 after.effect.animals <- filter(data.washout, Session=='S5' & Num==0)$Asym
-after.effect.estimate <- data.washout.after.effect[data.wahsout.after.effect$Session == 'S5']$predicted
-after.effect.std.error <- data.washout.after.effect[data.wahsout.after.effect$Session == 'S5']$std.error
+after.effect.estimate <- data.washout.after.effect[data.washout.after.effect$Session == 'S5',]$predicted
+after.effect.std.error <- data.washout.after.effect[data.washout.after.effect$Session == 'S5',]$std.error
 
 df <- data.frame(Phase = c('Change over split', 'After effect'),
                  Estimate = c(change.over.split.estimate, after.effect.estimate),
@@ -65,7 +65,7 @@ for (animal in unique(data.washout$Animal)) {
     geom_point(data=df.animals, aes(x=Phase, y=Estimate, group=Animal, color=Animal)) +
     geom_line(data=df.animals, aes(x=Phase, y=Estimate, group=Animal, color=Animal)) +
     geom_point(data=df, aes(x=Phase, y=Estimate), size  = 3) +
-    geom_errorbar(data=df, aes(x=Phase, y=Estimate, ymin=Estimate-Std.Error, ymax=Estimate+Std.Error), width=.2,
+    geom_errorbar(data=df, aes(x=Phase, y=Estimate, ymin=Estimate-Std.Error, ymax=Estimate+Std.Error), width=.1,
                   position=position_dodge(0.05)) +
     geom_line(data=df, aes(x=Phase, y=Estimate, group=0), size  = 1) +
     geom_hline(yintercept=c(0), linetype="dotted") +

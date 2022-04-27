@@ -17,17 +17,27 @@ library(merTools)
 
 ### get file
 name = 'Exp3'
-data_frame <- read.csv(
+if (name != 'Exp3') {
+  data_frame <- read.csv(
   file = paste('./data/', name, '_df.csv', sep="", collapse=NULL),   
                        sep=",",
                        dec=".", 
                        stringsAsFactors = TRUE)
+} else {
+  data_frame = data.frame()
+  for (group in c('Switch', 'NoSwitch'))
+  {data_frame <-  rbind(data_frame, read.csv(
+    file = paste('./data/', name, group, '_df.csv', sep="", collapse=NULL),   
+    sep=",",
+    dec=".", 
+    stringsAsFactors = TRUE))}
+}
 
 # data_frame$Group = relevel(data_frame$Phenotype, ref=3)
 data_frame <- within(data_frame, Group <- factor(Phenotype:Protocol))
 data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:NoSwitch')
 data_frame <- data_frame[! is.na(data_frame$Asym),]
-data_frame <- data_frame[data_frame$Protocol == 'Switch',]
+# data_frame <- data_frame[data_frame$Protocol == 'Switch',]
 
 data.total_frame <- data_frame
 data.split <- data_frame[data_frame$Phase == "Split",]
@@ -37,7 +47,7 @@ data.baseline <- data_frame[data_frame$Phase == "Baseline",]
 data.washout <- data_frame[data_frame$Phase == "Washout",]
 
 
-model.equation <- 'Asym ~ Num * Session + (1 + Num| Animal)'
+model.equation <- 'Asym ~ Num * Session * Group + (1 + Num| Animal)'
 
 model.split<-lmer(model.equation, data=data.split, REML= "true")
 model.washout<-lmer(model.equation, data=data.washout, REML= "true")
@@ -54,7 +64,7 @@ group_medians <- data.total_frame %>%
     facet_wrap(~Session, nrow=1) +   # a panel for each session
     geom_point(alpha = 0.5) +
     theme_classic() +
-    geom_line(data = cbind(data.washout, pred = predict(model.washout)), aes(y = pred),size = 1,) +  # adding predicted line from mixed model
+    geom_line(data = cbind(data.split, pred = predict(model.split)), aes(y = pred),size = 1,) +  # adding predicted line from mixed model
     theme(panel.spacing = unit(2, "lines"))  # adding space between panels
   + ggtitle(model.equation))
 

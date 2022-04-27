@@ -1,6 +1,4 @@
 ### plot experiment with fits
-library(cowplot)
-
 
 ### Plot switch group
 
@@ -32,7 +30,7 @@ plot.experiment.switch <- ggplot(data.switch, aes(x = Trial, y = Asym)) +
   # theme(panel.spacing = unit(2, "lines"))  # adding space between panels
   # ggtitle(model.equation)
   geom_hline(yintercept=c(0), linetype="dotted") +
-  ylim(-10,10) +
+  # ylim(-10,10) +
   theme_classic() +
   theme(legend.position="none") 
 
@@ -68,14 +66,15 @@ plot.experiment.noswitch <- ggplot(data.noswitch, aes(x = Trial, y = Asym)) +
   # theme(panel.spacing = unit(2, "lines"))  # adding space between panels
   # ggtitle(model.equation)
   geom_hline(yintercept=c(0), linetype="dotted") +
-  ylim(-10,10) +
+  # ylim(-10,10) +
   theme_classic() +
   theme(legend.position="none") 
 
-### join them together
+## set equal ylims
 
-
-plot_grid(plot.experiment.noswitch, plot.experiment.switch, nrow = 2, labels = 'AUTO')
+ylim = equal_y_limits(plot.experiment.noswitch, plot.experiment.switch)
+plot.experiment.noswitch = plot.experiment.noswitch + ylim(ylim)
+plot.experiment.switch = plot.experiment.switch + ylim(ylim)
 
 
 

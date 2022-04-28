@@ -1,107 +1,48 @@
+source("build_model.R")
+source("my_functions.R")
 
-conf.interval.factor = 1.96 # multiply std. error by this value to get the one way amplitude of the 95% conf interval
-
-sqrt_sum_sq <- function(...) {
-  nums = list(...)
-  r = 0
-  for (num in nums) {
-    r = r + num ^ 2
-  }
-  sqrt(r)
-}
-
-### plot switch group
-
-num.split.trials = max(unique(filter(data.split, Protocol == "Switch", Session == 'S5')$Num)) + 1
-
-coefs.split = as.data.frame(coef(summary(model.split)))
-
-initial.delta = coefs.split["SessionS5",]$Estimate
-initial.delta.std = coefs.split["SessionS5",]$"Std. Error"
-slope = coefs.split["Num",]$Estimate + coefs.split["Num:SessionS5",]$Estimate 
-slope.std = sqrt_sum_sq(coefs.split["Num",]$"Std. Error", coefs.split["Num:SessionS5",]$"Std. Error")   
-final.delta = initial.delta + slope * num.split.trials
-final.delta.std = sqrt_sum_sq(initial.delta.std, slope.std*num.split.trials)
-
-coefs.washout = as.data.frame(coef(summary(model.washout)))
-
-intercept = coefs.washout["(Intercept)"]$Estimate
-intercept.std = coefs.washout["(Intercept)"]$"Std. Error"
-washout.delta = coefs.washout["SessionS5"]$Estimate
-washout.delta.td = coefs.washout["SessionS5"]$"Std. Error"
-
-after.effect = intercept + washout.delta
-after.effect.std = sqrt_sum_sq(intercept.std, washout.delta.std)
-
-df <- data.frame(Phase = c('Change over split', 'After effect'),
-                 Estimate = c(final.delta, after.effect),
-                 "Std.Error" = c(final.delta.std, after.effect.std)
-)
-
-df.animals = data.frame(Phase = c(), Estimate = c(), Animal = c())
-for (animal in unique(filter(data.split, Protocol=='Switch')$Animal)) {
-  df.aux = data.frame(Phase = c('Change over split'),
-                      Estimate = c(filter(data.split, Session=='S5' & Num==3 & Animal==animal)$Asym - 
-                                     filter(data.split, Session=='S1' & Num==0 & Animal==animal)$Asym),
-                      Animal = c(animal)
-  )
-  df.animals <- rbind(df.animals, df.aux)
-}
-for (animal in unique(filter(data.washout, Protocol=='Switch')$Animal)) {
-  df.aux = data.frame(Phase = c('After effect'),
-                      Estimate = c(filter(data.split, Session=='S5' & Num==0 & Animal==animal)$Asym),
-                      Animal = c(animal)
-  )
-  df.animals <- rbind(df.animals, df.aux)
-}
-
-plot.change.switch <- ggplot() +
-    geom_point(data=df.animals, aes(x=Phase, y=Estimate, group=Animal, color=Animal)) +
-    geom_line(data=df.animals, aes(x=Phase, y=Estimate, group=Animal, color=Animal)) +
-    geom_point(data=df, aes(x=Phase, y=Estimate), size  = 3) +
-    geom_errorbar(data=df, aes(x=Phase, y=Estimate, ymin=Estimate-Std.Error, ymax=Estimate+Std.Error), width=.1,
+plot.change <- function(df, df.animals) {
+  ggplot() +
+    geom_point(data=df.animals, aes(x=Phase, y=Fit, group=Animal, color=Animal), alpha = 0.2) +
+    geom_line(data=df.animals, aes(x=Phase, y=Fit, group=Animal, color=Animal), alpha = 0.2) +
+    geom_point(data=df, aes(x=Phase, y=Fit), size  = 3) +
+    geom_errorbar(data=df, aes(x=Phase, y=Fit, ymin=Lower, ymax=Upper), width=.1,
                   position=position_dodge(0.05)) +
-    geom_line(data=df, aes(x=Phase, y=Estimate, group=0), size  = 1) +
+    geom_line(data=df, aes(x=Phase, y=Fit, group=0), size  = 1) +
     geom_hline(yintercept=c(0), linetype="dotted") +
     xlim('Change over split', 'After effect') +
     theme_classic() + theme(legend.position="none") +
     labs(x="Session", y = "Step length asymmetry (mm)")
+}
 
+### plot switch group
 
-### plot noswitch group
+num.split.trials = max(unique(filter(data.split, Protocol == "Switch", Session == 'S5')$Num)) 
 
-num.split.trials = max(unique(filter(data.split, Protocol == "NoSwitch", Session == 'S4')$Num)) + 1
+predict.change.over.split <- function(mod) {
+  first.error.df = data.frame(Num = 0, Group = "NotAtaxic:Switch", Session = "S1")
+  final.error.df = data.frame(Num = num.split.trials, Group = "NotAtaxic:Switch", Session = "S5")
+  return(predict(mod, newdata=final.error.df, re.form = ~0) - predict(mod, newdata=first.error.df, re.form = ~0))
+}
+change.over.split <- statBounded(model.split, predict.change.over.split)
 
-coefs.split = as.data.frame(coef(summary(model.split)))
+predict.after.effect <- function(mod) {
+  after.effect.df = data.frame(Num = 0, Group = "NotAtaxic:Switch", Session = "S5")
+  return(predict(mod, newdata=after.effect.df, re.form = ~0))
+}
+after.effect <- statBounded(model.washout, predict.after.effect)
 
-initial.delta = coefs.split["SessionS4",]$Estimate + coefs.split["SessionS5:GroupNotAtaxic:NoSwitch",]$Estimate
-initial.delta.std = sqrt_sum_sq(coefs.split["SessionS5",]$"Std. Error", 
-                                coefs.split["SessionS5:GroupNotAtaxic:NoSwitch",]$"Std. Error")
-slope = coefs.split["Num:SessionS5",]$Estimate
-slope.std = coefs.split["Num:SessionS5",]$"Std. Error"
+df <- cbind(Phase = c('Change over split', 'After effect'), rbind(change.over.split, after.effect))
 
-final.delta = initial.delta + slope * num.split.trials
-final.delta.std = sqrt_sum_sq(initial.delta.std, slope.std*num.split.trials)
+# df <- data.frame(Phase = c('Change over split', 'After effect'),
+#                  Fit = c(final.delta, after.effect),
+#                  "Std.Error" = c(final.delta.std, after.effect.std)
+# )
 
-coefs.washout = as.data.frame(coef(summary(model.washout)))
-
-intercept = coefs.washout["(Intercept)"]$Estimate
-intercept.std = coefs.washout["(Intercept)"]$"Std. Error"
-washout.delta = coefs.washout["SessionS5"]$Estimate
-washout.delta.td = coefs.washout["SessionS5"]$"Std. Error"
-
-after.effect = intercept + washout.delta
-after.effect.std = sqrt_sum_sq(intercept.std, washout.delta.std)
-
-df <- data.frame(Phase = c('Change over split', 'After effect'),
-                 Estimate = c(final.delta, after.effect),
-                 "Std.Error" = c(final.delta.std, after.effect.std)
-)
-
-df.animals = data.frame(Phase = c(), Estimate = c(), Animal = c())
+df.animals = data.frame(Phase = c(), Fit = c(), Animal = c())
 for (animal in unique(filter(data.split, Protocol=='Switch')$Animal)) {
   df.aux = data.frame(Phase = c('Change over split'),
-                      Estimate = c(filter(data.split, Session=='S5' & Num==3 & Animal==animal)$Asym - 
+                      Fit = c(filter(data.split, Session=='S5' & Num==num.split.trials & Animal==animal)$Asym - 
                                      filter(data.split, Session=='S1' & Num==0 & Animal==animal)$Asym),
                       Animal = c(animal)
   )
@@ -109,20 +50,49 @@ for (animal in unique(filter(data.split, Protocol=='Switch')$Animal)) {
 }
 for (animal in unique(filter(data.washout, Protocol=='Switch')$Animal)) {
   df.aux = data.frame(Phase = c('After effect'),
-                      Estimate = c(filter(data.split, Session=='S5' & Num==0 & Animal==animal)$Asym),
+                      Fit = c(filter(data.washout, Session=='S5' & Num==0 & Animal==animal)$Asym),
                       Animal = c(animal)
   )
   df.animals <- rbind(df.animals, df.aux)
 }
 
-plot.change.noswitch <- ggplot() +
-  geom_point(data=df.animals, aes(x=Phase, y=Estimate, group=Animal, color=Animal)) +
-  geom_line(data=df.animals, aes(x=Phase, y=Estimate, group=Animal, color=Animal)) +
-  geom_point(data=df, aes(x=Phase, y=Estimate), size  = 3) +
-  geom_errorbar(data=df, aes(x=Phase, y=Estimate, ymin=Estimate-Std.Error, ymax=Estimate+Std.Error), width=.1,
-                position=position_dodge(0.05)) +
-  geom_line(data=df, aes(x=Phase, y=Estimate, group=0), size  = 1) +
-  geom_hline(yintercept=c(0), linetype="dotted") +
-  xlim('Change over split', 'After effect') +
-  theme_classic() + theme(legend.position="none") +
-  labs(x="Session", y = "Step length asymmetry (mm)")
+plot.change.switch <- plot.change(df, df.animals)
+
+
+### plot noswitch group
+
+num.split.trials = max(unique(filter(data.split, Protocol == "NoSwitch", Session == 'S4')$Num))
+
+predict.change.over.split <- function(mod) {
+  first.error.df = data.frame(Num = 0, Group = "NotAtaxic:NoSwitch", Session = "S1")
+  final.error.df = data.frame(Num = num.split.trials, Group = "NotAtaxic:NoSwitch", Session = "S4")
+  return(predict(mod, newdata=final.error.df, re.form = ~0) - predict(mod, newdata=first.error.df, re.form = ~0))
+}
+change.over.split <- statBounded(model.split, predict.change.over.split)
+
+predict.after.effect <- function(mod) {
+  after.effect.df = data.frame(Num = 0, Group = "NotAtaxic:NoSwitch", Session = "S4")
+  return(predict(mod, newdata=after.effect.df, re.form = ~0))
+}
+after.effect <- statBounded(model.washout, predict.after.effect)
+
+df <- cbind(Phase = c('Change over split', 'After effect'), rbind(change.over.split, after.effect))
+
+df.animals = data.frame(Phase = c(), Fit = c(), Animal = c())
+for (animal in unique(filter(data.split, Protocol=='NoSwitch')$Animal)) {
+  df.aux = data.frame(Phase = c('Change over split'),
+                      Fit = c(filter(data.split, Session=='S4' & Num==num.split.trials & Animal==animal)$Asym - 
+                                filter(data.split, Session=='S1' & Num==0 & Animal==animal)$Asym),
+                      Animal = c(animal)
+  )
+  df.animals <- rbind(df.animals, df.aux)
+}
+for (animal in unique(filter(data.washout, Protocol=='NoSwitch')$Animal)) {
+  df.aux = data.frame(Phase = c('After effect'),
+                      Fit = c(filter(data.washout, Session=='S4' & Num==0 & Animal==animal)$Asym),
+                      Animal = c(animal)
+  )
+  df.animals <- rbind(df.animals, df.aux)
+}
+
+plot.change.noswitch <- plot.change(df, df.animals)

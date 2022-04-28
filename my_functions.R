@@ -24,6 +24,7 @@ equal_y_limits <- function(...) {
   c(ymin, ymax)
 } 
 
+
 set_equal_y_lims <- function(...) {
   ylim = equal_y_limits(...)
   plots = list(...)

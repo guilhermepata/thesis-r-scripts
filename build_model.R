@@ -35,7 +35,7 @@ if (name != 'Exp3') {
 
 # data_frame$Group = relevel(data_frame$Phenotype, ref=3)
 data_frame <- within(data_frame, Group <- factor(Phenotype:Protocol))
-data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:NoSwitch')
+data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
 data_frame <- data_frame[! is.na(data_frame$Asym),]
 # data_frame <- data_frame[data_frame$Protocol == 'Switch',]
 

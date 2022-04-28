@@ -35,22 +35,32 @@ if (name != 'Exp3') {
 
 # data_frame$Group = relevel(data_frame$Phenotype, ref=3)
 data_frame <- within(data_frame, Group <- factor(Phenotype:Protocol))
-data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
+if (name != 'Exp4'){
+  data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:NoSwitch')
+} else {
+  data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
+}
 data_frame <- data_frame[! is.na(data_frame$Asym),]
 # data_frame <- data_frame[data_frame$Protocol == 'Switch',]
 
 data.total_frame <- data_frame
 data.split <- data_frame[data_frame$Phase == "Split",]
-# data.split <- data.split[data.split$Session != 'S6',]
 data.intersplit <- data_frame[data_frame$Phase == "Intersplit",]
 data.baseline <- data_frame[data_frame$Phase == "Baseline",]
 data.washout <- data_frame[data_frame$Phase == "Washout",]
 
-
 model.equation <- 'Asym ~ Num * Session * Group + (1 + Num| Animal)'
+if (name != 'Exp4'){
+  model.equation.intersplit <- 'Asym ~ Num * Session + (1 + Num| Animal)'
+} else {
+  model.equation.intersplit <- 'Asym ~ Num * Session * Group + (1 + Num| Animal)'
+}
+
 
 model.split<-lmer(model.equation, data=data.split, REML= "true")
 model.washout<-lmer(model.equation, data=data.washout, REML= "true")
+model.intersplit<-lmer(model.equation.intersplit, data=data.intersplit, REML= "true")
+model.baseline<-lmer(model.equation, data=data.baseline, REML= "true")
 
 modelsummary(model.split, stars=TRUE, metrics=c("RMSE","R2"))
 

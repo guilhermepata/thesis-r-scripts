@@ -1,3 +1,6 @@
+source("build_model.R")
+# source("plot_limits.R")
+
 ### plot experiment with fits
 
 ### Plot switch group
@@ -69,12 +72,6 @@ plot.experiment.noswitch <- ggplot(data.noswitch, aes(x = Trial, y = Asym)) +
   # ylim(-10,10) +
   theme_classic() +
   theme(legend.position="none") 
-
-## set equal ylims
-
-ylim = equal_y_limits(plot.experiment.noswitch, plot.experiment.switch)
-plot.experiment.noswitch = plot.experiment.noswitch + ylim(ylim)
-plot.experiment.switch = plot.experiment.switch + ylim(ylim)
 
 
 

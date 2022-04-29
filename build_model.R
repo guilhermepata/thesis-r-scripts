@@ -65,6 +65,8 @@ model.baseline<-lmer(model.equation, data=data.baseline, REML= "true")
 
 modelsummary(model.split, stars=TRUE, metrics=c("RMSE","R2"))
 
+modelsummary(model.split, stars=TRUE, estimate = "{estimate}({p.value})",statistic = "[{conf.low}:{conf.high}]")
+
 data.split.summary = summarise.predict(data.split, model.split, Trial, Num, Session, Group)
 data.washout.summary = summarise.predict(data.washout, model.washout, Trial, Num, Session, Group)
 data.intersplit.summary = summarise.predict(data.intersplit, model.intersplit, Trial, Num, Session, Group)
@@ -88,3 +90,17 @@ group_medians <- data.total_frame %>%
 is.built <- TRUE
 
 }
+
+# anova(fm1)
+# 
+# emms1<- emtrends(fm1,pairwise~genotype|cell_deathcat, var="trial_num", 
+#                  lmer.df = "satterthwaite",type="response")
+# 
+# summary(emms1, infer=TRUE)
+
+# emms1<- emmeans(fm1, pairwise~genotype | cell_deathcat, 
+#                 lmer.df = "satterthwaite",type="response")
+# 
+# summary(emms1,infer=TRUE)
+
+

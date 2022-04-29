@@ -62,9 +62,9 @@ predictBounded <- function(mod, newdata, nsim=200) {
 }
 
 statBounded <- function(mod, predict.function, nsim=200, is.ratio = FALSE) {
-  if (is.ratio) {
-    predict.function = log(predict.function)
-  }
+  # if (is.ratio) {
+  #   predict.function = log(predict.function)
+  # }
   bb <- bootMer(mod,
                 FUN=predict.function,
                 nsim=200)  

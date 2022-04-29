@@ -49,7 +49,7 @@ sqrt_sum_sq <- function(...) {
 conf.interval.factor = 1.96 # multiply std. error by this value to get the one way amplitude of the 95% conf interval
 
 predictBounded <- function(mod, newdata, nsim=200) {
-  newdata$Prediction = predict(mod, newdata=newdata, re.form = ~0)
+  newdata$Fit = predict(mod, newdata=newdata, re.form = ~0)
   
   predFun <- function(x) predict(x,newdata=newdata,re.form=NA)
   bb <- bootMer(mod,
@@ -61,19 +61,39 @@ predictBounded <- function(mod, newdata, nsim=200) {
   return(newdata)
 }
 
-statBounded <- function(mod, predict.function, nsim=200) {
+statBounded <- function(mod, predict.function, nsim=200, is.ratio = FALSE) {
+  if (is.ratio) {
+    predict.function = log(predict.function)
+  }
   bb <- bootMer(mod,
                 FUN=predict.function,
                 nsim=200)  
   bb_ci <- as.data.frame(t(apply(bb$t,2,quantile,c(0.025,0.975))))
   names(bb_ci) <- c("Lower","Upper")
   newdata <- cbind(Fit = predict.function(mod), bb_ci)
+  newdata <- append.p.value(newdata)
   return(newdata)
 }
 
-# calculate_bounded <- function(values, factors) {
-#   result = 0
-#   for (i in 1:length(values)) {
-#     result = values[[i]][[1]]*factors[[i]]
-#   }
-# }
+
+p.value <- function(fit, lwr, upr) {
+  std.err = (upr - lwr)  / (2 * conf.interval.factor)
+  z = fit / std.err
+  p = exp(- 0.717*z - 0.416*z^2)
+  return(p)
+}
+
+append.p.value <- function(df) {
+  df <- cbind(df, "P-value" = p.value(df$Fit, df$Lower, df$Upper))
+  return(df)
+}
+
+summarise.factors <- function(data, ...) {
+  return(summarise(group_by(data, ...)))
+}
+
+summarise.predict <- function(data, model, ...) {
+  newdata = summarise.factors(data, ...)
+  newdata <- predictBounded(model, newdata = newdata)
+  return(newdata)
+}

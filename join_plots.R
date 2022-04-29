@@ -21,8 +21,22 @@ for (i in 1:(length(plotlist)%/%2)) {
   plotlist[[i+delta]] = b
 }
 
+for (i in 1:length(plotlist)) {
+  plotlist[[i]] = plotlist[[i]] + 
+    theme(
+      axis.title.x = element_text(size = 10),
+      axis.title.y = element_text(size = 10)
+      )
+}
 
-(p = cowplot::plot_grid(plotlist = plotlist, nrow = 2, labels = 'AUTO', rel_widths = c(1.3, 1, 1.2), scale=0.9))
+top.row.list = plotlist[c(1, 4)]
+bottom.row.list = plotlist[c(2, 3, 5, 6)]
+
+top.row = cowplot::plot_grid(plotlist = top.row.list, nrow = 1, labels = 'AUTO', scale = .9)
+
+bottom.row = cowplot::plot_grid(plotlist = bottom.row.list, nrow = 1, labels = c('C', 'D', 'E', 'F'), scale = .9)
+
+(p = cowplot::plot_grid(top.row, bottom.row, nrow = 2, ncol = 1, labels = ''))
 
 # patchwork = (plot.experiment.noswitch / plot.experiment.switch) + 
 #             (plot.errors.noswitch / plot.errors.switch) +

@@ -15,6 +15,8 @@ library(sjPlot)
 library(tidyverse)
 library(merTools)
 
+if (!exists("is.built") || ! is.built) {
+
 ### get file
 name = 'Exp3'
 if (name != 'Exp3') {
@@ -56,7 +58,6 @@ if (name != 'Exp4'){
   model.equation.intersplit <- 'Asym ~ Num * Session * Group + (1 + Num| Animal)'
 }
 
-
 model.split<-lmer(model.equation, data=data.split, REML= "true")
 model.washout<-lmer(model.equation, data=data.washout, REML= "true")
 model.intersplit<-lmer(model.equation.intersplit, data=data.intersplit, REML= "true")
@@ -64,6 +65,12 @@ model.baseline<-lmer(model.equation, data=data.baseline, REML= "true")
 
 modelsummary(model.split, stars=TRUE, metrics=c("RMSE","R2"))
 
+data.split.summary = summarise.predict(data.split, model.split, Trial, Num, Session, Group)
+data.washout.summary = summarise.predict(data.washout, model.washout, Trial, Num, Session, Group)
+data.intersplit.summary = summarise.predict(data.intersplit, model.intersplit, Trial, Num, Session, Group)
+data.baseline.summary = summarise.predict(data.baseline, model.baseline, Trial, Num, Session, Group)
+
+data.summary = rbind(data.split.summary, data.washout.summary, data.intersplit.summary, data.baseline.summary)
 
 group_medians <- data.total_frame %>%
   group_by(Trial, Session, Group) %>%
@@ -78,4 +85,6 @@ group_medians <- data.total_frame %>%
     theme(panel.spacing = unit(2, "lines"))  # adding space between panels
   + ggtitle(model.equation))
 
+is.built <- TRUE
 
+}

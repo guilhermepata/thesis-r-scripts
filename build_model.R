@@ -103,4 +103,8 @@ is.built <- TRUE
 # 
 # summary(emms1,infer=TRUE)
 
+# emms1<- emtrends(fm1,pairwise~genotype*trial_num, var="cell_death", 
+#                  lmer.df = "satterthwaite",type="response",
+#                  at= list(trial_num= c(4)))
+
 

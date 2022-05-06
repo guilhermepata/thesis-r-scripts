@@ -19,7 +19,7 @@ source("my_functions.R")
 if (!exists("is.built") || ! is.built) {
 
 ### get file
-name = 'Exp3'
+name = 'Exp5'
 if (name != 'Exp3') {
   data_frame <- read.csv(
   file = paste('./data/', name, '_df.csv', sep="", collapse=NULL),   

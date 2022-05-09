@@ -19,7 +19,7 @@ source("my_functions.R")
 if (!exists("is.built") || ! is.built) {
 
 ### get file
-name = 'Exp5'
+name = 'Exp4'
 if (name != 'Exp3') {
   data_frame <- read.csv(
   file = paste('./data/', name, '_df.csv', sep="", collapse=NULL),   
@@ -44,6 +44,7 @@ if (name != 'Exp4'){
   data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
 }
 data_frame <- data_frame[! is.na(data_frame$Asym),]
+data_frame = filter(data_frame, Phenotype!='HalfAtaxic')
 # data_frame <- data_frame[data_frame$Protocol == 'Switch',]
 
 data.total_frame <- data_frame
@@ -59,10 +60,10 @@ if (name != 'Exp4'){
   model.equation.intersplit <- 'Asym ~ Num * Session * Group + (1 + Num| Animal)'
 }
 
-model.split<-lmer(model.equation, data=data.split, REML= "true")
-model.washout<-lmer(model.equation, data=data.washout, REML= "true")
-model.intersplit<-lmer(model.equation.intersplit, data=data.intersplit, REML= "true")
-model.baseline<-lmer(model.equation, data=data.baseline, REML= "true")
+model.split<-lmer(model.equation, data=data.split, REML= "false")
+model.washout<-lmer(model.equation, data=data.washout, REML= "false")
+model.intersplit<-lmer(model.equation.intersplit, data=data.intersplit, REML= "false")
+model.baseline<-lmer(model.equation, data=data.baseline, REML= "false")
 
 modelsummary(model.split, stars=TRUE, metrics=c("RMSE","R2"))
 

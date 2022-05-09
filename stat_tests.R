@@ -2,6 +2,9 @@
 
 {if (name == 'Exp3' || name == 'Exp5') {
   initial.error.test.at = list(Session=c('S1'), Num=0)
+} else if (name == 'Exp4') {
+  initial.error.test.at = list(Session=c('S1'), Num=0, 
+                               Group=c('NotAtaxic:Switch', 'Ataxic:Switch'))
 }
 
 (initial.error.test = summary(emmeans(
@@ -93,4 +96,30 @@
   at=list(Session=c('S4'), Num=0))))
 
 
+## Exp4 
+
+(error.reduction.test = summary(emmeans(
+  model.split, pairwise ~ Session * Num | Group,
+  at=list(
+    Group = c('NotAtaxic:Switch', 'Ataxic:Switch'),
+    Num = c(0,5,11)
+    # Session = c('S3','S5')
+  ))$contrasts, infer=TRUE))
+
+(learning.rate.test = summary(emtrends(
+  model.split, identity ~ Session | Group,
+  var = "Num",
+  at=list(
+    Group = c('NotAtaxic:Switch', 'Ataxic:Switch')
+    # Num = c(0,5,11)
+    # Session = c('S3','S5')
+  ))$contrasts, infer=TRUE))
+
+(after.effect.test = summary(emmeans(
+  model.washout, identity ~ Session | Group,
+  at=list(
+    Group = c('NotAtaxic:Switch', 'Ataxic:Switch'),
+    Num = c(0)
+    # Session = c('S3','S5')
+  ))$contrasts, infer=TRUE))
 

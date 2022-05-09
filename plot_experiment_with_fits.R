@@ -17,7 +17,7 @@ plot.experiment <- function(data, data.summary) {
     geom_line(aes(group=Animal, colour = Animal), alpha = 0.2) +
     geom_point(data = data.median, aes(y=Median, group=0), color='Black', size=1) +
     geom_line(data = data.median, aes(y=Median, group=0), color='Black', size=1) +
-    # geom_line(data = data.summary, aes(y=Fit, group=0), color='Blue', size=1) +
+    geom_line(data = data.summary, aes(y=Fit, group=0), color='Blue', size=1) +
     geom_ribbon(data = data.summary, aes(y=Fit, ymin=Lower, ymax=Upper, group=0), fill='Black', alpha=0.2) +
     geom_hline(yintercept=c(0), linetype="dotted") +
     theme_classic() +
@@ -26,7 +26,7 @@ plot.experiment <- function(data, data.summary) {
   return(p)
 }
 
-data.switch <- filter(data.total_frame, Protocol == 'Switch')
+data.switch <- filter(data.total_frame, Group == 'NotAtaxic:Switch')
 data.switch.summary <- filter(data.summary, Group == 'NotAtaxic:Switch')
 plot.experiment.switch <- plot.experiment(data.switch, data.switch.summary)
 
@@ -39,5 +39,10 @@ data.noswitch.summary <- filter(data.summary, Group == 'NotAtaxic:NoSwitch')
 plot.experiment.noswitch <- plot.experiment(data.noswitch, data.noswitch.summary)
 
 
+### Plot ataxic group
 
+data.ataxic = filter(data.total_frame, Group == 'Ataxic:Switch')
+data.ataxic.summary <- filter(data.summary, Group == 'Ataxic:Switch')
+
+plot.experiment.ataxic <- plot.experiment(data.ataxic, data.ataxic.summary)
 

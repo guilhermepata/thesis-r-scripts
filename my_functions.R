@@ -97,3 +97,20 @@ summarise.predict <- function(data, model, ...) {
   newdata <- predictBounded(model, newdata = newdata)
   return(newdata)
 }
+
+
+darken <- function(color, factor=1.4){
+  col <- col2rgb(color)
+  col <- col/factor
+  col <- rgb(t(col), maxColorValue=255)
+  col
+}
+
+
+lighten <- function(color, factor = 0.5) {
+  if ((factor > 1) | (factor < 0)) stop("factor needs to be within [0,1]")
+  col <- col2rgb(color)
+  col <- col + (255 - col)*factor
+  col <- rgb(t(col), maxColorValue=255)
+  col
+}

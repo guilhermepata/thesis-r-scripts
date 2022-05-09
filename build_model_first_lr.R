@@ -19,7 +19,7 @@ source("my_functions.R")
 if (!exists("is.builtLR") || ! is.builtLR) {
   
   ### get file
-  name = 'Exp4'
+  name = 'Exp3'
   if (name != 'Exp3') {
     data_frame_lr <- read.csv(
       file = paste('./data/', name, '_perc_df.csv', sep="", collapse=NULL),   

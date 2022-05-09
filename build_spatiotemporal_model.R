@@ -1,10 +1,10 @@
 source("build_model.R")
 library(MuMIn)
 
-data.zscored = data.split
+data.zscored = data.total_frame
 data.zscored[10:17] <- scale(data.zscored[10:17])
 
-model.equation.spatiotemporal = 'Asym ~ Group *(coo + double_support + stance_speed + swing_length) + (1|Animal) + (1|Session)'
+model.equation.spatiotemporal = 'Asym ~ Group * (coo + double_support) + (1|Animal) + (1|Session) + (1|Phase)'
 
 model.spatiotemporal <-lmer(model.equation.spatiotemporal, data=data.zscored, REML= "false")
 
@@ -26,7 +26,7 @@ data.summary2 = summarise(group_by(data.zscored2, Trial, Num, Session, Group),
     geom_point(aes(y=Mean, color=Group, shape=Group), alpha=0.3) +
     geom_line(aes(y=Mean, color=Group, shape=Group, group=Group), alpha=0.3) +
     geom_point(aes(y=MeanFit, color=Group, shape=Group), alpha=0.3) +
-    geom_line(aes(y=MeanFit, color=Group, shape=Group, group=Group), alpha=0.3)
+    geom_line(aes(y=MeanFit, color=Group, group=Group), linestyle='--', alpha=0.3)
   )
 
 
@@ -47,5 +47,5 @@ r.squaredGLMM(model.spatiotemporal)
 (means.test = emmeans(model.spatiotemporal, pairwise ~ Group, at = list(Phase='Split', coo=0, double_support=0)))
 (spatial.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "coo", at=list(Phase='Split')))
 (temporal.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "double_support", at=list(Phase='Split')))
-(stl.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "swing_length", at=list(Phase='Split')))
-(sts.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "stance_speed", at=list(Phase='Split')))
+# (stl.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "swing_length", at=list(Phase='Split')))
+# (sts.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "stance_speed", at=list(Phase='Split')))

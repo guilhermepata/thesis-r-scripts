@@ -19,7 +19,7 @@ source("my_functions.R")
 if (!exists("is.built") || ! is.built) {
 
 ### get file
-  if (!exists("name")) {name = 'Exp3'}
+if (!exists("name")) {name = 'Exp3'}
 
 if (name != 'Exp3') {
   data_frame <- read.csv(
@@ -70,12 +70,15 @@ modelsummary(model.split, stars=TRUE, metrics=c("RMSE","R2"))
 
 modelsummary(model.split, stars=TRUE, estimate = "{estimate}({p.value})",statistic = "[{conf.low}:{conf.high}]")
 
-data.split.summary = summarise.predict(data.split, model.split, Trial, Num, Session, Group)
-data.washout.summary = summarise.predict(data.washout, model.washout, Trial, Num, Session, Group)
-data.intersplit.summary = summarise.predict(data.intersplit, model.intersplit, Trial, Num, Session, Group)
-data.baseline.summary = summarise.predict(data.baseline, model.baseline, Trial, Num, Session, Group)
+data.split.summary = summarise.predict(data.split, model.split, Trial, Phase)
+data.washout.summary = summarise.predict(data.washout, model.washout, Trial, Phase)
+data.intersplit.summary = summarise.predict(data.intersplit, model.intersplit, Trial, Phase)
+data.baseline.summary = summarise.predict(data.baseline, model.baseline, Trial, Phase)
 
-data.summary = rbind(data.split.summary, data.washout.summary, data.intersplit.summary, data.baseline.summary)
+data.summary = rbind(data.split.summary, 
+                     data.washout.summary, 
+                     data.intersplit.summary, 
+                     data.baseline.summary)
 
 group_medians <- data.total_frame %>%
   group_by(Trial, Session, Group) %>%

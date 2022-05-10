@@ -119,7 +119,7 @@
   model.washout, identity ~ Session | Group,
   at=list(
     Group = c('NotAtaxic:Switch', 'Ataxic:Switch'),
-    Num = c(0)
+    Num = c(5)
     # Session = c('S3','S5')
   ))$contrasts, infer=TRUE))
 

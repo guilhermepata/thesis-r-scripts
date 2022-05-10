@@ -59,7 +59,10 @@ plot.experiment <- function(data, data.summary, color='#619CFF') {
 
 data.switch <- filter(data.total_frame, Group == 'NotAtaxic:Switch')
 data.switch.summary <- filter(data.summary, Group == 'NotAtaxic:Switch')
-(plot.experiment.switch <- plot.experiment(data.switch, data.switch.summary, color='tan2'))
+
+color = get_group_color('NotAtaxic:Switch')
+
+(plot.experiment.switch <- plot.experiment(data.switch, data.switch.summary, color=color))
 
 
 ### Plot noswitch group
@@ -69,7 +72,9 @@ if (name != 'Exp4')
 data.noswitch = filter(data.total_frame, Protocol == 'NoSwitch')
 data.noswitch.summary <- filter(data.summary, Group == 'NotAtaxic:NoSwitch')
 
-(plot.experiment.noswitch <- plot.experiment(data.noswitch, data.noswitch.summary, color='slategray'))
+color = get_group_color('NotAtaxic:NoSwitch')
+
+(plot.experiment.noswitch <- plot.experiment(data.noswitch, data.noswitch.summary, color=color))
 
 }
 ### Plot ataxic group
@@ -79,5 +84,7 @@ if (name == 'Exp4' )
 data.ataxic = filter(data.total_frame, Group == 'Ataxic:Switch')
 data.ataxic.summary <- filter(data.summary, Group == 'Ataxic:Switch')
 
-(plot.experiment.ataxic <- plot.experiment(data.ataxic, data.ataxic.summary, color='lightslateblue'))
+color = get_group_color('Ataxic:Switch')
+
+(plot.experiment.ataxic <- plot.experiment(data.ataxic, data.ataxic.summary, color=color))
 }

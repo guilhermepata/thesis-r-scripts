@@ -1,4 +1,4 @@
-source(bi)
+source("build_model.R")
 source("my_functions.R")
 
 learning.rate.plot <- function(learning.rate.values, 

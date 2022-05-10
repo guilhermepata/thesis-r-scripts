@@ -92,11 +92,11 @@ summarise.factors <- function(data, ...) {
   return(summarise(group_by(data, ...)))
 }
 
-# summarise.predict <- function(data, model, ...) {
-#   newdata = summarise.factors(data, ...)
-#   newdata <- predictBounded(model, newdata = newdata)
-#   return(newdata)
-# }
+summarise.predict.old <- function(data, model, ...) {
+  newdata = summarise.factors(data, ...)
+  newdata <- predictBounded(model, newdata = newdata)
+  return(newdata)
+}
 
 summarise.predict <- function(data, model, ...) {
   newdata = summarise.factors(data, Num, Session, Group, ...)

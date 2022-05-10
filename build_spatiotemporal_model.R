@@ -45,7 +45,7 @@ ms <- modelsummary(model.spatiotemporal, output='data.frame', stars=TRUE, gof_ma
 r.squaredGLMM(model.spatiotemporal)
 
 (means.test = emmeans(model.spatiotemporal, pairwise ~ Group, at = list(Phase='Split', coo=0, double_support=0)))
-(spatial.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "coo", at=list(Phase='Split')))
+(spatial.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "coo", at=list(Phase='Split', double_support=0)))
 (temporal.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "double_support", at=list(Phase='Split')))
 # (stl.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "swing_length", at=list(Phase='Split')))
 # (sts.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "stance_speed", at=list(Phase='Split')))

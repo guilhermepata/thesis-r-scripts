@@ -1,7 +1,7 @@
-source("build_model.R")
+source("build_model_first_lr.R")
 source("my_functions.R")
 
-learning.rate.plot <- function(learning.rate.values, 
+plot.initial.lr <- function(learning.rate.values, 
                                 group='NotAtaxic:Switch', 
                                 xlim=c('S1', 'S2', 'S3', 'S4', 'S5'), 
                                 color='#619CFF')  {
@@ -48,7 +48,7 @@ if (name == 'Exp3') {
   color = get_group_color(group)
   xlim=c('S1', 'S2', 'S3', 'S4', 'S5')
   
-  (learning.rate.plot = learning.rate.plot(learning.rate.values, 
+  (plot.initial.lr = plot.initial.lr(learning.rate.values, 
                                            color=color, 
                                            group=group, 
                                            xlim=xlim)
@@ -87,7 +87,7 @@ if (name == 'Exp5') {
   color = get_group_color(group)
   xlim=c('S1', 'S2', 'S3', 'S4', 'S5')
   
-  (learning.rate.plot.switch = learning.rate.plot(learning.rate.values, 
+  (plot.initial.lr.switch = plot.initial.lr(learning.rate.values, 
                                            color=color, 
                                            group=group, 
                                            xlim=xlim)
@@ -100,7 +100,7 @@ if (name == 'Exp5') {
     color = get_group_color(group)
     xlim=c('S1', 'S2', 'S3', 'S4', 'S5')
     
-    (learning.rate.plot.noswitch = learning.rate.plot(learning.rate.values, 
+    (plot.initial.lr.noswitch = plot.initial.lr(learning.rate.values, 
                                              color=color, 
                                              group=group, 
                                              xlim=xlim)
@@ -139,7 +139,7 @@ if (name == 'Exp4') {
     color = get_group_color(group)
     xlim=c('S1', 'S2', 'S3', 'S5')
     
-    (learning.rate.plot.ataxic = learning.rate.plot(learning.rate.values, 
+    (plot.initial.lr.ataxic = plot.initial.lr(learning.rate.values, 
                                              color=color, 
                                              group=group, 
                                              xlim=xlim)
@@ -152,7 +152,7 @@ if (name == 'Exp4') {
     color = get_group_color(group)
     xlim=c('S1', 'S2', 'S3', 'S5')
     
-    (learning.rate.plot.switch = learning.rate.plot(learning.rate.values, 
+    (plot.initial.lr.switch = plot.initial.lr(learning.rate.values, 
                                                     color=color, 
                                                     group=group, 
                                                     xlim=xlim)

@@ -58,7 +58,8 @@ if (!exists("is.builtLR") || ! is.builtLR) {
   
   modelsummary(model.first.lr, stars=TRUE, estimate = "{estimate}({p.value})",statistic = "[{conf.low}:{conf.high}]")
   
-  data.first.lr.summary = summarise.predict(data.first.lr, model.first.lr, Trial, Perc, Num, Session, Group)
+  data.first.lr.summary = summarise.predict.old(data.first.lr, model.first.lr, Trial, Perc, Num, Session, Group)
+  
   # data.washout.summary = summarise.predict(data.washout, model.washout, Trial, Num, Session, Group)
   # data.intersplit.summary = summarise.predict(data.intersplit, model.intersplit, Trial, Num, Session, Group)
   # data.baseline.summary = summarise.predict(data.baseline, model.baseline, Trial, Num, Session, Group)

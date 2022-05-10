@@ -92,9 +92,62 @@ summarise.factors <- function(data, ...) {
   return(summarise(group_by(data, ...)))
 }
 
+# summarise.predict <- function(data, model, ...) {
+#   newdata = summarise.factors(data, ...)
+#   newdata <- predictBounded(model, newdata = newdata)
+#   return(newdata)
+# }
+
 summarise.predict <- function(data, model, ...) {
   newdata = summarise.factors(data, ...)
-  newdata <- predictBounded(model, newdata = newdata)
+  auxdata = data.frame()
+  
+  predict.big = tryCatch(
+    {
+      summary(emmeans(model, 
+                      ~ Num * Session * Group,
+                      at = list(
+                        Num = unique(newdata$Num),
+                        Session = unique(newdata$Session),
+                        Group = unique(newdata$Group)
+                      )), infer=TRUE)
+    },
+    error=function(cond) {
+      summary(emmeans(model, 
+                      ~ Num * Session,
+                      at = list(
+                        Num = unique(newdata$Num),
+                        Session = unique(newdata$Session)
+                        # Group = unique(newdata$Group)
+                      )), infer=TRUE)
+    })
+  
+    
+  for (i in 1:nrow(newdata)) {
+    row = newdata[i,]
+    num = row$Num
+    session = row$Session
+    group = row$Group
+    if ('Group' %in% names(predict)){
+        predict = filter(predict.big, 
+                         Num==num, 
+                         Session==session, 
+                         Group==group)[1,]
+    } else {
+      predict = filter(predict.big, 
+                       Num==num, 
+                       Session==session, 
+                       )[1,]
+    }
+    
+    predict.aux = data.frame(Fit = c(predict$emmean),
+                             Lower = c(predict$lower.CL),
+                             Upper = c(predict$upper.CL),
+                             P.value = c(predict$p.value)
+                             )
+    auxdata = rbind(auxdata, predict.aux)
+  }
+  newdata <- cbind(newdata, auxdata)
   return(newdata)
 }
 

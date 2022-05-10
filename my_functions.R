@@ -99,7 +99,7 @@ summarise.factors <- function(data, ...) {
 # }
 
 summarise.predict <- function(data, model, ...) {
-  newdata = summarise.factors(data, ...)
+  newdata = summarise.factors(data, Num, Session, Group, ...)
   auxdata = data.frame()
   
   predict.big = tryCatch(
@@ -166,4 +166,15 @@ lighten <- function(color, factor = 0.5) {
   col <- col + (255 - col)*factor
   col <- rgb(t(col), maxColorValue=255)
   col
+}
+
+
+get_group_color <- function(group) {
+  if (group=='NotAtaxic:NoSwitch') {
+    return('slategray')
+  } else if (group=='NotAtaxic:Switch') {
+    return('tan2') 
+  } else if (group=='Ataxic:Switch') {
+    return('lightslateblue')
+  }
 }

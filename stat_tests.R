@@ -9,7 +9,7 @@
 
 (initial.error.test = summary(emmeans(
                       model.split, pairwise ~ Group, 
-                      at=initial.error.test.at))$contrasts)
+                      at=initial.error.test.at)$contrasts, infer=TRUE))
 }
 
 

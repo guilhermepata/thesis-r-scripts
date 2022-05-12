@@ -29,7 +29,7 @@ plot.change <- function(df, df.animals, color='#619CFF') {
     
     scale_x_discrete(limits=c('Change over split', 'After effect'), labels=c("Change over split" = "COS", "After effect" = "AE")) +
     theme_classic() + theme(legend.position="none") +
-    labs(x=element_blank(), y = "Step length asymmetry (mm)")
+    labs(x=element_blank(), y = "Step length asym. (mm)")
 }
 
 make_change_df <- function(data.summary, 
@@ -188,11 +188,11 @@ plot.change.switch <- plot.change(df.switch, df.animals.switch, color=color)
 
 ### plot noswitch group
   
-  if (name == 'Exp3') {
-    sessions.split = c('S1', 'S4')
-  } else if (name == 'Exp5') {
-    sessions.split = c('S1', 'S5')
-  }
+if (name == 'Exp3') {
+  sessions.split = c('S1', 'S4')
+} else if (name == 'Exp5') {
+  sessions.split = c('S1', 'S5')
+}
   
 group = 'NotAtaxic:NoSwitch'
 color = get_group_color(group)

@@ -3,8 +3,9 @@ library(MuMIn)
 
 data.zscored = data.total_frame
 data.zscored[10:17] <- scale(data.zscored[10:17])
+data.zscored = filter(data.zscored, Phase == 'Split')
 
-model.equation.spatiotemporal = 'Asym ~ Group * (coo + double_support) + (1|Animal) + (1|Session) + (1|Phase)'
+model.equation.spatiotemporal = 'Asym ~ Group * (coo + double_support + ) + (1|Animal) + (1|Session)'
 
 model.spatiotemporal <-lmer(model.equation.spatiotemporal, data=data.zscored, REML= "false")
 

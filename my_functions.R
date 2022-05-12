@@ -1,4 +1,5 @@
 library(gsubfn)
+library(pracma)
 library(lme4)
 
 get_plot_limits <- function(plot) {
@@ -25,6 +26,20 @@ equal_y_limits <- function(...) {
 } 
 
 
+equal_x_limits <- function(...) {
+  plots <- list(...)
+  xmin = c()
+  xmax = c()
+  for (plot in plots) {
+    lims = get_plot_limits(plot)
+    xmin = append(xmin, lims$xmin)
+    xmax = append(xmax, lims$xmax)
+  }
+  xmin = min(xmin)
+  xmax = max(xmax)
+  c(xmin, xmax)
+} 
+
 set_equal_y_lims <- function(...) {
   ylim = equal_y_limits(...)
   plots = list(...)
@@ -36,6 +51,17 @@ set_equal_y_lims <- function(...) {
   return(plots)
 }
 
+
+set_equal_x_lims <- function(...) {
+  xlim = equal_x_limits(...)
+  plots = list(...)
+  for (i in 1:length(plots)) {
+    plot = plots[[i]]
+    plot <- plot + xlim(xlim)
+    plots[[i]] = plot
+  }
+  return(plots)
+}
 
 sqrt_sum_sq <- function(...) {
   nums = list(...)
@@ -178,3 +204,7 @@ get_group_color <- function(group) {
     return('lightslateblue')
   }
 }
+
+height.large = 5.83/2
+height.short = 5.83/2*2.5/3
+height.xshort = 5.83/2*2.2/3

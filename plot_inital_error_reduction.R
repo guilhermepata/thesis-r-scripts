@@ -36,7 +36,7 @@ plot.initial.error <- function(data.split,
   geom_hline(yintercept=c(0), linetype="dashed", alpha=0.5) +
   xlim(xlim) +
   theme_classic() + theme(legend.position="none") +
-  labs(x="Session", y = "Step length asymmetry (mm)")
+  labs(x="Session", y = "Step length asym. (mm)")
   
   return(p)
 }
@@ -83,7 +83,7 @@ if (name == 'Exp5') {
   {
     group = 'NotAtaxic:NoSwitch'
     color = get_group_color(group)
-    xlim = c('S1', 'S2', 'S3', 'S4')
+    xlim = c('S1', 'S2', 'S3', 'S4', 'S5')
     
     (plot.errors.noswitch <- plot.initial.error(data.split, data.split.summary,
                                                 group = group,

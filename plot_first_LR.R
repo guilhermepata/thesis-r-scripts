@@ -1,3 +1,4 @@
+name = 'Exp5'
 source("build_model_first_lr.R")
 source("my_functions.R")
 

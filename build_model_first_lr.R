@@ -20,7 +20,6 @@ if (!exists("is.builtLR") || ! is.builtLR) {
   
   ### get file
   if (!exists("name")) {name = 'Exp3'}
-  name = 'Exp3'
   if (name != 'Exp3') {
     data_frame_lr <- read.csv(
       file = paste('./data/', name, '_perc_df.csv', sep="", collapse=NULL),   

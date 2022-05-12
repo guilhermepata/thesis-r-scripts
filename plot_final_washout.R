@@ -61,7 +61,7 @@ plot.final.washout <- function(data.washout,
     geom_hline(yintercept=c(0), linetype="dashed", alpha=0.5) +
     xlim(xlim) +
     theme_classic() + theme(legend.position="none") +
-    labs(x="Session", y = "Step length asymmetry (mm)")
+    labs(x="Session", y = "Step length asym. (mm)")
   
   return(p)
 }

@@ -50,7 +50,7 @@ plot.experiment <- function(data, data.summary, color='#619CFF') {
     
     theme_classic() +
     theme(legend.position="none") +
-    labs(x='Trials', y = "Step length asymmetry (mm)")
+    labs(x='Trials', y = "Step length asym. (mm)")
   return(p)
 }
 

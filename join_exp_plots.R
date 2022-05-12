@@ -1,7 +1,7 @@
 library(cowplot)
 library(patchwork)
 is.built = FALSE
-name = 'Exp2'
+name = 'Exp3'
 source("my_functions.R")
 source("plot_experiment_with_fits.R")
 
@@ -34,5 +34,5 @@ for (i in 1:length(plotlist)) {
 
 (p = cowplot::plot_grid(plotlist = plotlist, nrow = 2, labels = 'AUTO', scale = .9))
 
-ggsave(paste("plots/", name, "_experiment_plot", ".pdf", sep=""), width = 8.27, height = 5.83, device = cairo_pdf)
+ggsave(paste("plots/", name, "_experiment_plot", ".pdf", sep=""), width = 8.27, height = height.short*2, device = cairo_pdf)
 

@@ -19,7 +19,8 @@ source("my_functions.R")
 if (!exists("is.built") || ! is.built) {
 
 ### get file
-name = 'Exp3'
+if (!exists("name")) {name = 'Exp3'}
+
 if (name != 'Exp3') {
   data_frame <- read.csv(
   file = paste('./data/', name, '_df.csv', sep="", collapse=NULL),   
@@ -44,6 +45,7 @@ if (name != 'Exp4'){
   data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
 }
 data_frame <- data_frame[! is.na(data_frame$Asym),]
+data_frame = filter(data_frame, Phenotype!='HalfAtaxic')
 # data_frame <- data_frame[data_frame$Protocol == 'Switch',]
 
 data.total_frame <- data_frame
@@ -59,21 +61,24 @@ if (name != 'Exp4'){
   model.equation.intersplit <- 'Asym ~ Num * Session * Group + (1 + Num| Animal)'
 }
 
-model.split<-lmer(model.equation, data=data.split, REML= "true")
-model.washout<-lmer(model.equation, data=data.washout, REML= "true")
-model.intersplit<-lmer(model.equation.intersplit, data=data.intersplit, REML= "true")
-model.baseline<-lmer(model.equation, data=data.baseline, REML= "true")
+model.split<-lmer(model.equation, data=data.split, REML= "false")
+model.washout<-lmer(model.equation, data=data.washout, REML= "false")
+model.intersplit<-lmer(model.equation.intersplit, data=data.intersplit, REML= "false")
+model.baseline<-lmer(model.equation, data=data.baseline, REML= "false")
 
 modelsummary(model.split, stars=TRUE, metrics=c("RMSE","R2"))
 
 modelsummary(model.split, stars=TRUE, estimate = "{estimate}({p.value})",statistic = "[{conf.low}:{conf.high}]")
 
-data.split.summary = summarise.predict(data.split, model.split, Trial, Num, Session, Group)
-data.washout.summary = summarise.predict(data.washout, model.washout, Trial, Num, Session, Group)
-data.intersplit.summary = summarise.predict(data.intersplit, model.intersplit, Trial, Num, Session, Group)
-data.baseline.summary = summarise.predict(data.baseline, model.baseline, Trial, Num, Session, Group)
+data.split.summary = summarise.predict(data.split, model.split, Trial, Phase)
+data.washout.summary = summarise.predict(data.washout, model.washout, Trial, Phase)
+data.intersplit.summary = summarise.predict(data.intersplit, model.intersplit, Trial, Phase)
+data.baseline.summary = summarise.predict(data.baseline, model.baseline, Trial, Phase)
 
-data.summary = rbind(data.split.summary, data.washout.summary, data.intersplit.summary, data.baseline.summary)
+data.summary = rbind(data.split.summary, 
+                     data.washout.summary, 
+                     data.intersplit.summary, 
+                     data.baseline.summary)
 
 group_medians <- data.total_frame %>%
   group_by(Trial, Session, Group) %>%

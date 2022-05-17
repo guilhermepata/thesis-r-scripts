@@ -13,7 +13,10 @@ plot.experiment <- function(data, data.summary, color='#619CFF') {
     group_by(Trial, Session, Phase) %>%
     summarise(Mean = mean(Asym))
   
+  trial.range = c(min(data.mean$Trial)-1, max(data.mean$Trial)+1)
+  
   data.session.breaks = data.mean[match(unique(data.mean$Session), data.mean$Session),]$Trial
+  data.session.breaks = data.session.breaks[2:length(data.session.breaks)]
   
   split.trials = filter(data.mean, Phase == 'Split')$Trial
   ymax = rep(Inf, length(split.trials))
@@ -30,24 +33,26 @@ plot.experiment <- function(data, data.summary, color='#619CFF') {
   
   p <- ggplot(data, aes(x = Trial)) +
     
-    geom_vline(xintercept=data.session.breaks-0.5, alpha=0.2) +
+    geom_vline(xintercept=data.session.breaks-0.5, alpha=0.5) +
     
     geom_rect(data=shades.frame,
                 xmin=shades.frame$xmin, xmax=shades.frame$xmax, ymin=ymin, ymax=ymax, alpha=0.2) +
     
-    geom_point(aes(y=Asym), alpha = 0.5, size=1, shape=21, fill=color.light, color=color.light) +
-    geom_line(aes(y=Asym, group=Animal), color=color.light, alpha = 0.5) +
+    # geom_point(aes(y=Asym), alpha = 0.5, size=1, shape=21, fill=color.light, color=color.light) +
+    # geom_line(aes(y=Asym, group=Animal), color=color.light, alpha = 0.5) +
     
     
-    geom_col(data = data.summary, aes(y=Fit, group=0), fill=color, alpha = 0.75) +
+    geom_line(data = data.summary, aes(y=Fit, group=interaction(Session, Phase)), fill=color, size = .8, alpha = 0.75) +
     # geom_point(data = data.summary, aes(y=Fit, group=0), size=1.5, color=color, alpha = 0.6) +
-    geom_errorbar(data = data.summary, aes(y=Fit, ymin=Lower, ymax=Upper, group=0), color=color, alpha = 1, size = 0.5, width=0.5) +
+    # geom_errorbar(data = data.summary, aes(y=Fit, ymin=Lower, ymax=Upper, group=0), color=color, alpha = 1, size = 0.5, width=0.5) +
+    geom_ribbon(data = data.summary, aes(y=Fit, ymin=Lower, ymax=Upper, group=interaction(Session, Phase)), fill=color, alpha = 0.5, size = 0.5, width=0.5) +
     
-    geom_point(data = data.median, aes(y=Median, group=0), color=color.dark, fill=color.dark, size=1.5, shape=21, alpha=0.6) +
-    geom_line(data = data.median, aes(y=Median, group=0), color=color.dark, size=.8, alpha=0.6) +
+    geom_point(data = data.mean, aes(y=Mean, group=interaction(Session, Phase)), color=color.dark, fill=color.dark, size=1.5, shape=21, alpha=0.6) +
+    geom_line(data = data.mean, aes(y=Mean, group=interaction(Session, Phase)), color=color.dark, size=.5, alpha=0.6) +
     
     geom_hline(yintercept=c(0), linetype="dashed", alpha=0.5) +
     
+    scale_x_continuous(limits = trial.range, expand = expansion(mult = 0, add = 0)) +
     theme_classic() +
     theme(legend.position="none") +
     labs(x='Trials', y = "Step length asym. (mm)")

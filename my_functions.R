@@ -196,6 +196,9 @@ lighten <- function(color, factor = 0.5) {
 
 
 get_group_color <- function(group) {
+  if (length(group) > 1){
+    return (cbind(get_group_color(group[[1]]),get_group_color(group[2:length(group)])))
+  }
   if (group=='NotAtaxic:NoSwitch') {
     return('slategray')
   } else if (group=='NotAtaxic:Switch') {

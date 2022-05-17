@@ -2,10 +2,17 @@ source("build_model.R")
 library(MuMIn)
 
 data.zscored = data.total_frame
-data.zscored[10:17] <- scale(data.zscored[10:17])
-data.zscored = filter(data.zscored, Phase == 'Split')
+data.zscored[10:18] <- scale(data.zscored[10:18])
+data.zscored$S6Q <- data.zscored$Session == 'S6'
+if (name == 'Exp3') {
+  # data.zscored = filter(data.zscored, Phase == 'Split')
+  data.zscored = filter(data.zscored, Phase == 'Split', Session != 'S6')
+}
+if (name == 'Exp5') {
+  data.zscored = filter(data.zscored, Phase == 'Split', Session == 'S1' || Session == 'S2')
+}
 
-model.equation.spatiotemporal = 'Asym ~ Group * (coo + double_support + ) + (1|Animal) + (1|Session)'
+model.equation.spatiotemporal = 'Asym ~ S6Q * Group * (coo + double_support + swing_length + duty_factor) + (1|Animal) + (1|Session)'
 
 model.spatiotemporal <-lmer(model.equation.spatiotemporal, data=data.zscored, REML= "false")
 
@@ -45,8 +52,16 @@ ms <- modelsummary(model.spatiotemporal, output='data.frame', stars=TRUE, gof_ma
 
 r.squaredGLMM(model.spatiotemporal)
 
-(means.test = emmeans(model.spatiotemporal, pairwise ~ Group, at = list(Phase='Split', coo=0, double_support=0)))
-(spatial.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "coo", at=list(Phase='Split', double_support=0)))
-(temporal.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "double_support", at=list(Phase='Split')))
-# (stl.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "swing_length", at=list(Phase='Split')))
-# (sts.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "stance_speed", at=list(Phase='Split')))
+(spatiotemporal.cor = cor(data.zscored$coo, data.zscored$double_support))
+(spatial.ind.cor = cor(data.zscored$coo, data.zscored$swing_length))
+(temporal.ind.cor = cor(data.zscored$double_support, data.zscored$duty_factor))
+
+(spatial.cor = cor(data.zscored$coo, data.zscored$Asym))
+(temporal.cor = cor(data.zscored$double_support, data.zscored$Asym))
+
+(means.test = emmeans(model.spatiotemporal, pairwise ~ Group, at = list(Phase='Split', coo=0, double_support=0, swing_length=0, duty_factor=0)))
+(spatial.trend.test = emtrends(model.spatiotemporal, identity ~ Group, var = "coo", at=list(Phase='Split', double_support=0)))
+(temporal.trend.test = emtrends(model.spatiotemporal, identity ~ Group, var = "double_support", at=list(Phase='Split')))
+(spatial.ind.trend.test = emtrends(model.spatiotemporal, pairwise ~ Group, var = "swing_length", at=list(Phase='Split')))
+(temporal.ind.trend.test = emtrends(model.spatiotemporal, identity ~ Group, var = "duty_factor", at=list(Phase='Split')))
+# (asym.ind.trend.test = emtrends(model.spatiotemporal, identity ~ Group, var = "stance_speed", at=list(Phase='Split')))

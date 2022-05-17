@@ -1,100 +1,37 @@
 library(pracma)
 source('build_spatiotemporal_model.R')
 
-
-coo.range = linspace(min(data.zscored$coo), max(data.zscored$coo), n = 100)
-(spatial.means = as.data.frame(emmeans(model.spatiotemporal, ~ coo*Group, 
-                         at = list(Phase='Split', 
-                                   coo=coo.range, 
-                                   double_support=0))))
-
-ds.range = linspace(min(data.zscored$double_support), max(data.zscored$double_support), n = 100)
-(temporal.means = as.data.frame(emmeans(model.spatiotemporal, ~ double_support*Group, 
-                                       at = list(Phase='Split', 
-                                                 double_support=ds.range, 
-                                                 coo=0))))
-
-spatial.trends = as.data.frame(spatial.trend.test$emtrends)
-temporal.trends =  as.data.frame(temporal.trend.test$emtrends)
-means = as.data.frame(means.test$emmeans)
-
-lines.frame.spatial = data.frame(Group=spatial.trends$Group, 
-                         intercept=means$emmean, 
-                         slope=spatial.trends$coo.trend)
-
-lines.frame.temporal = data.frame(Group=temporal.trends$Group, 
-                                 intercept=means$emmean, 
-                                 slope=temporal.trends$double_support.trend)
-
-groups = unique(data.zscored$Group)
-
-( plot.parameters.spatial = ggplot() +
-    geom_point(data=data.zscored, 
-                       aes(x=coo, y=Asym, color=Group),
-                       # color=get_group_color(group),
-                       alpha=0.2) +
-    geom_smooth(data=data.zscored, 
-               aes(x=coo, y=Asym, color=Group, fill=Group),
-               method = lm,
-               linetype = "dotted",
-               # color=get_group_color(group),
-               alpha=0.4,
-               size=1) +
-    geom_abline(data=lines.frame.spatial,
-                aes(intercept = intercept,
-                    slope = slope,
-                    group = Group,
-                    color = Group),
-                size=1) +
-    # geom_line(data=spatial.means,
-    #           aes(x=coo, 
-    #               y=emmean, 
-    #               group=Group, 
-    #               color=Group),
-    #           size=1) +
-    geom_ribbon(data=spatial.means,
-              aes(x=coo, 
-                  y=emmean,
-                  ymin=lower.CL,
-                  ymax=upper.CL,
-                  group=Group, 
-                  fill=Group),
-              size=1,
-              alpha=0.4) +
-  theme_classic() + theme(legend.position="none") +
-  scale_fill_manual(values=c(get_group_color(groups[[1]]), 
-                             get_group_color(groups[[2]]))) +
-  scale_color_manual(values=c(get_group_color(groups[[1]]), 
-                              get_group_color(groups[[2]]))) +
-  labs(x="Center of oscillation asym. (z-scored)", y = "Step length asym. (z-scored)")
-  )
-
-( plot.parameters.temporal = ggplot() +
-    geom_point(data=data.zscored, 
-               aes(x=double_support, y=Asym, color=Group),
-               # color=get_group_color(group),
+plot.parameters <- function(param, param_title, data = data.zscored, model = model.spatiotemporal) {
+  param.range = linspace(min(data[,param]), max(data[,param]), n = 100)
+  at = list()
+  at[[param]] = param.range
+  param.means = as.data.frame(emmeans(model, 
+                                      formula(paste('~', param , '*', 'Group')),
+                                      at=at ))
+  # param.trends = as.data.frame(emtrends(model, pairwise ~ Group, var = param))
+  groups = unique(param.means$Group)
+  
+  end = length(param.range)
+  param.fit.frame = data.frame(Group = groups, 
+                               x = c(param.range[[1]], param.range[[1]]),
+                               y = c(filter(param.means, Group == groups[[1]])$emmean[[1]],
+                                     filter(param.means, Group == groups[[2]])$emmean[[1]]),
+                               xend = c(param.range[[end]], param.range[[end]]),
+                               yend = c(filter(param.means, Group == groups[[1]])$emmean[[end]],
+                                        filter(param.means, Group == groups[[2]])$emmean[[end]]))
+  
+  p = ggplot() + 
+    geom_point(data=data, 
+               aes(x=!!sym(param), y=Asym, color=Group),
                alpha=0.2) +
-    geom_smooth(data=data.zscored, 
-                aes(x=double_support, y=Asym, color=Group, fill=Group),
+    geom_smooth(data=data, 
+                aes(x=!!sym(param), y=Asym, color=Group, fill=Group),
                 method = lm,
                 linetype = "dotted",
-                # color=get_group_color(group),
                 alpha=0.4,
                 size=1) +
-    geom_abline(data=lines.frame.temporal, 
-                aes(intercept = intercept,
-                    slope = slope,
-                    group = Group,
-                    color = Group),
-                size=1) +
-    # geom_line(data=temporal.means,
-    #           aes(x=double_support, 
-    #               y=emmean, 
-    #               group=Group, 
-    #               color=Group),
-    #           size=1) +
-    geom_ribbon(data=temporal.means,
-                aes(x=double_support, 
+    geom_ribbon(data=param.means,
+                aes(x=!!sym(param), 
                     y=emmean,
                     ymin=lower.CL,
                     ymax=upper.CL,
@@ -102,12 +39,28 @@ groups = unique(data.zscored$Group)
                     fill=Group),
                 size=1,
                 alpha=0.4) +
+    geom_segment(data = param.fit.frame,
+                 aes(x=x,
+                     y=y,
+                     xend=xend,
+                     yend=yend,
+                     color=Group),
+                 size=1) +
     theme_classic() + theme(legend.position="none") +
     scale_fill_manual(values=c(get_group_color(groups[[1]]), 
                                get_group_color(groups[[2]]))) +
     scale_color_manual(values=c(get_group_color(groups[[1]]), 
-                               get_group_color(groups[[2]]))) +
-    labs(x="Double support asym. (z-scored)", y = "Step length asym. (z-scored)")
-)
+                                get_group_color(groups[[2]]))) +
+    labs(x=paste(param_title, "(z-scored)"), y = "Step length asym. (z-scored)")
+  
+  return(p)
+}
 
 
+( plot.parameters.spatial = plot.parameters(param='coo', param_title = 'Center of oscillation asym.'))
+
+( plot.parameters.temporal = plot.parameters(param='double_support', param_title = 'Double support asym.')) 
+
+( plot.parameters.spatial.ind = plot.parameters(param='swing_length', param_title = 'Swing length asym.'))
+
+( plot.parameters.temporal.ind = plot.parameters(param='duty_factor', param_title = 'Duty factor asym.'))

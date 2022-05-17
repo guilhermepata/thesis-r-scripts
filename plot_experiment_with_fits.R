@@ -56,7 +56,6 @@ plot.experiment <- function(data, data.summary, color='#619CFF') {
 
 
 ### Plot switch group
-
 data.switch <- filter(data.total_frame, Group == 'NotAtaxic:Switch')
 data.switch.summary <- filter(data.summary, Group == 'NotAtaxic:Switch')
 

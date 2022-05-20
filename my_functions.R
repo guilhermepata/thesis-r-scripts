@@ -87,7 +87,8 @@ predictBounded <- function(mod, newdata, nsim = 200) {
   bb <- bootMer(mod,
                 FUN = predFun,
                 nsim = 200)
-  bb_ci <- as.data.frame(t(apply(bb$t, 2, quantile, c(0.025, 0.975))))
+  bb_ci <-
+    as.data.frame(t(apply(bb$t, 2, quantile, c(0.025, 0.975))))
   names(bb_ci) <- c("Lower", "Upper")
   newdata <- cbind(newdata, bb_ci)
   return(newdata)
@@ -104,7 +105,8 @@ statBounded <-
     bb <- bootMer(mod,
                   FUN = predict.function,
                   nsim = 200)
-    bb_ci <- as.data.frame(t(apply(bb$t, 2, quantile, c(0.025, 0.975))))
+    bb_ci <-
+      as.data.frame(t(apply(bb$t, 2, quantile, c(0.025, 0.975))))
     names(bb_ci) <- c("Lower", "Upper")
     newdata <- cbind(Fit = predict.function(mod), bb_ci)
     newdata <- append.p.value(newdata)
@@ -161,7 +163,7 @@ summarise.predict <- function(data, model, ...) {
   
   
   for (i in 1:nrow(newdata)) {
-    row = newdata[i, ]
+    row = newdata[i,]
     num = row$Num
     session = row$Session
     group = row$Group
@@ -169,11 +171,11 @@ summarise.predict <- function(data, model, ...) {
       predict = filter(predict.big,
                        Num == num,
                        Session == session,
-                       Group == group)[1, ]
+                       Group == group)[1,]
     } else {
       predict = filter(predict.big,
                        Num == num,
-                       Session == session,)[1, ]
+                       Session == session, )[1,]
     }
     
     predict.aux = data.frame(

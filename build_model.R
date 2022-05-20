@@ -64,16 +64,17 @@ if (!exists("is.built") || !is.built) {
   } else {
     data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
   }
-  data_frame <- data_frame[!is.na(data_frame$Asym),]
+  data_frame <- data_frame[!is.na(data_frame$Asym), ]
   data_frame = filter(data_frame, Phenotype != 'HalfAtaxic')
+  data_frame = cbind(Experiment = rep(name, nrow(data_frame)), data_frame)
   # data_frame <- data_frame[data_frame$Protocol == 'Switch',]
   
   data.total_frame <- data_frame
-  data.split <- data_frame[data_frame$Phase == "Split",]
-  data.intersplit <- data_frame[data_frame$Phase == "Intersplit",]
+  data.split <- data_frame[data_frame$Phase == "Split", ]
+  data.intersplit <- data_frame[data_frame$Phase == "Intersplit", ]
   
-  data.baseline <- data_frame[data_frame$Phase == "Baseline",]
-  data.washout <- data_frame[data_frame$Phase == "Washout",]
+  data.baseline <- data_frame[data_frame$Phase == "Baseline", ]
+  data.washout <- data_frame[data_frame$Phase == "Washout", ]
   
   model.equation <-
     'Asym ~ Num * Session * Group + (1 + Num| Animal)'
@@ -107,10 +108,50 @@ if (!exists("is.built") || !is.built) {
     statistic = "[{conf.low}:{conf.high}]"
   )
   
-  data.split.summary = summarise.predict(data.split, model.split, Trial, Phase)
-  data.washout.summary = summarise.predict(data.washout, model.washout, Trial, Phase)
-  data.intersplit.summary = summarise.predict(data.intersplit, model.intersplit, Trial, Phase)
-  data.baseline.summary = summarise.predict(data.baseline, model.baseline, Trial, Phase)
+  if (!exists("useOld") || !useOld) {
+    data.split.summary = summarise.predict(data.split, model.split, Experiment, Trial, Phase)
+    data.washout.summary = summarise.predict(data.washout, model.washout, Experiment, Trial, Phase)
+    data.intersplit.summary = summarise.predict(data.intersplit,
+                                                model.intersplit,
+                                                Experiment,
+                                                Trial,
+                                                Phase)
+    data.baseline.summary = summarise.predict(data.baseline, model.baseline, Experiment, Trial, Phase)
+    
+  } else {
+    data.split.summary = summarise.predict.old(data.split,
+                                               model.split,
+                                               Num,
+                                               Session,
+                                               Group,
+                                               Experiment,
+                                               Trial,
+                                               Phase)
+    data.washout.summary = summarise.predict.old(data.washout,
+                                                 model.washout,
+                                                 Num,
+                                                 Session,
+                                                 Group,
+                                                 Experiment,
+                                                 Trial,
+                                                 Phase)
+    data.intersplit.summary = summarise.predict.old(data.intersplit,
+                                                    model.intersplit,
+                                                    Num,
+                                                    Session,
+                                                    Group,
+                                                    Experiment,
+                                                    Trial,
+                                                    Phase)
+    data.baseline.summary = summarise.predict.old(data.baseline,
+                                                  model.baseline,
+                                                  Num,
+                                                  Session,
+                                                  Group,
+                                                  Experiment,
+                                                  Trial,
+                                                  Phase)
+  }
   
   data.summary = rbind(
     data.split.summary,
@@ -119,33 +160,6 @@ if (!exists("is.built") || !is.built) {
     data.baseline.summary
   )
   
-  group_medians <- data.total_frame %>%
-    group_by(Trial, Session, Group) %>%
-    summarise(Median = median(Asym))
-  
-  ### plot model
-  (
-    mm_plot <-
-      ggplot(
-        data.split,
-        aes(
-          x = Num,
-          y = Asym,
-          colour = Animal,
-          shape = Group,
-          linetype = Group
-        )
-      ) +
-      facet_wrap(~ Session, nrow = 1) +   # a panel for each session
-      geom_point(alpha = 0.5) +
-      theme_classic() +
-      geom_line(
-        data = cbind(data.split, pred = predict(model.split)),
-        aes(y = pred),
-        size = 1,
-      ) +  # adding predicted line from mixed model
-      theme(panel.spacing = unit(2, "lines"))  # adding space between panels+ggtitle(model.equation)
-  )
   
   is.built <- TRUE
   

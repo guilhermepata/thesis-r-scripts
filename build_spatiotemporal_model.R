@@ -2,7 +2,7 @@ source("build_model.R")
 library(MuMIn)
 
 data.zscored = data.total_frame
-data.zscored[10:18] <- scale(data.zscored[10:18])
+data.zscored[11:19] <- scale(data.zscored[11:19])
 data.zscored$S6Q <- data.zscored$Session == 'S6'
 if (name == 'Exp3') {
   # data.zscored = filter(data.zscored, Phase == 'Split')

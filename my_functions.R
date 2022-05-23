@@ -163,7 +163,7 @@ summarise.predict <- function(data, model, ...) {
   
   
   for (i in 1:nrow(newdata)) {
-    row = newdata[i,]
+    row = newdata[i, ]
     num = row$Num
     session = row$Session
     group = row$Group
@@ -171,11 +171,11 @@ summarise.predict <- function(data, model, ...) {
       predict = filter(predict.big,
                        Num == num,
                        Session == session,
-                       Group == group)[1,]
+                       Group == group)[1, ]
     } else {
       predict = filter(predict.big,
                        Num == num,
-                       Session == session, )[1,]
+                       Session == session,)[1, ]
     }
     
     predict.aux = data.frame(
@@ -226,3 +226,21 @@ get_group_color <- function(group) {
 height.large = 5.83 / 2
 height.short = 5.83 / 2 * 2.5 / 3
 height.xshort = 5.83 / 2 * 2.2 / 3
+
+
+continuous.shades.frame <- function(shades.frame) {
+  shades.frame = arrange(shades.frame, Trial)
+  to.remove = list()
+  for (i in 1:nrow(shades.frame)) {
+    if (!shades.frame[i, ]$Trial %in% to.remove) {
+      delta = 0
+      while (i + delta + 1 <= nrow(shades.frame) && shades.frame[i + delta + 1, ]$Trial - shades.frame[i + delta, ]$Trial == 1)
+      {
+        to.remove = append(to.remove, shades.frame[i + delta + 1, ]$Trial)
+        shades.frame[i, ]$xmax = shades.frame[i + delta + 1, ]$xmax
+        delta = delta + 1
+      }
+    }
+  }
+  shades.frame = filter(shades.frame, !Trial %in% to.remove)
+}

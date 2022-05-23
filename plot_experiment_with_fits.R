@@ -29,6 +29,7 @@ plot.experiment <- function(data, data.summary, color = '#619CFF') {
     ymin = ymin,
     ymax = ymax
   )
+  shades.frame = continuous.shades.frame(shades.frame)
   
   color.dark <- darken(color)
   color.light <- lighten(color)
@@ -41,8 +42,8 @@ plot.experiment <- function(data, data.summary, color = '#619CFF') {
       data = shades.frame,
       xmin = shades.frame$xmin,
       xmax = shades.frame$xmax,
-      ymin = ymin,
-      ymax = ymax,
+      ymin = shades.frame$ymin,
+      ymax = shades.frame$ymax,
       alpha = 0.2
     ) +
     
@@ -54,7 +55,7 @@ plot.experiment <- function(data, data.summary, color = '#619CFF') {
       data = data.summary,
       aes(y = Fit, group = interaction(Session, Phase)),
       fill = color,
-      size = .8,
+      size = .5,
       alpha = 0.75
     ) +
     # geom_point(data = data.summary, aes(y=Fit, group=0), size=1.5, color=color, alpha = 0.6) +

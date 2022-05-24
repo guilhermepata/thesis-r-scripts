@@ -1,9 +1,9 @@
-source("build_model.R")
+source("build_mega_model.R")
 # source("plot_limits.R")
 
 ### plot experiment with fits
 
-
+sessions = c('S1', 'S2', 'S3', 'S4', 'S5')
 
 plot.experiment <- function(data, data.summary, color = '#619CFF') {
   data.median = data %>%
@@ -104,27 +104,31 @@ plot.experiment <- function(data, data.summary, color = '#619CFF') {
 
 
 ### Plot switch group
-data.switch <- filter(data.total_frame, Group == 'NotAtaxic:Switch')
-data.switch.summary <-
-  filter(data.summary, Group == 'NotAtaxic:Switch')
 
-color = get_group_color('NotAtaxic:Switch')
+{group = paste(name, 'NotAtaxic:Switch', sep=':')
+
+data.switch <- filter(mega.data, Group == group, Session %in% sessions)
+data.switch.summary <-
+  filter(mega.data.summary, Group == group)
+
+color = get_group_color(group)
 
 (
   plot.experiment.switch <-
     plot.experiment(data.switch, data.switch.summary, color = color)
-)
+)}
 
 
 ### Plot noswitch group
 
-if (name != 'Exp4')
-{
-  data.noswitch = filter(data.total_frame, Protocol == 'NoSwitch')
-  data.noswitch.summary <-
-    filter(data.summary, Group == 'NotAtaxic:NoSwitch')
+if (name != 'Exp4') {
+  group = paste(name, 'NotAtaxic:NoSwitch', sep=':')
   
-  color = get_group_color('NotAtaxic:NoSwitch')
+  data.noswitch <- filter(mega.data, Group == group, Session %in% sessions)
+  data.noswitch.summary <-
+    filter(mega.data.summary, Group == group)
+  
+  color = get_group_color(group)
   
   (
     plot.experiment.noswitch <-
@@ -134,13 +138,14 @@ if (name != 'Exp4')
 }
 ### Plot ataxic group
 
-if (name == 'Exp4')
-{
-  data.ataxic = filter(data.total_frame, Group == 'Ataxic:Switch')
-  data.ataxic.summary <-
-    filter(data.summary, Group == 'Ataxic:Switch')
+if (name == 'Exp4') {
+  group = paste(name, 'Ataxic:Switch', sep=':')
   
-  color = get_group_color('Ataxic:Switch')
+  data.ataxic <- filter(mega.data, Group == group, Session %in% sessions)
+  data.ataxic.summary <-
+    filter(mega.data.summary, Group == group)
+  
+  color = get_group_color(group)
   
   (
     plot.experiment.ataxic <-

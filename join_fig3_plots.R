@@ -8,7 +8,7 @@ source("plot_final_washout.R")
 
 if (name == 'Exp3') {
   plotlist = list(plot.final.washout.switch,
-                  plot.initial.lr)
+                  plot.initial.lr.switch) 
   
   
   # for (i in (1:(length(plotlist)%/%2))*2-1) {
@@ -24,20 +24,24 @@ if (name == 'Exp3') {
             axis.title.y = element_text(size = 10))
   }
   
+  for (i in 1:length(plotlist)) {
+    plotlist[[i]] = plotlist[[i]] +
+      theme(plot.margin = unit(c(0.25, 0.25, 0.25, 1), "cm"))
+  }
+  
   nrow = 1
   
   (p = cowplot::plot_grid(
     plotlist = plotlist,
     nrow = nrow,
-    labels = 'AUTO',
-    scale = .9
+    labels = 'AUTO'
   ))
   
   ggsave(
     paste("plots/", name, "_fig3_plot", ".pdf", sep = ""),
+    device = cairo_pdf,
     width = 8.27,
-    height = 5.83 / 2,
-    device = cairo_pdf
+    height = 5.83 / 2
   )
   
   

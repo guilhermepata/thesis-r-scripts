@@ -214,6 +214,10 @@ get_group_color <- function(group) {
   if (length(group) > 1) {
     return (cbind(get_group_color(group[[1]]), get_group_color(group[2:length(group)])))
   }
+  group.parts = str_split(group, ":")[[1]]
+  if (grepl('Exp', group.parts[[1]])) {
+    group = paste(group.parts[[2]], group.parts[[3]], sep = ':')
+  }
   if (group == 'NotAtaxic:NoSwitch') {
     return('slategray')
   } else if (group == 'NotAtaxic:Switch') {

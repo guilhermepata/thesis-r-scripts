@@ -59,11 +59,11 @@ if (!exists("is.built") || !is.built) {
   # data_frame$Group = relevel(data_frame$Phenotype, ref=3)
   data_frame <-
     within(data_frame, Group <- factor(Phenotype:Protocol))
-  if (name != 'Exp4') {
-    data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:NoSwitch')
-  } else {
-    data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
-  }
+  # if (name != 'Exp4') {
+  #   data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:NoSwitch')
+  # } else {
+  #   data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
+  # }
   data_frame <- data_frame[!is.na(data_frame$Asym), ]
   data_frame = filter(data_frame, Phenotype != 'HalfAtaxic')
   data_frame = cbind(Experiment = rep(name, nrow(data_frame)), data_frame)
@@ -77,7 +77,7 @@ if (!exists("is.built") || !is.built) {
   data.washout <- data_frame[data_frame$Phase == "Washout", ]
   
   model.equation <-
-    'Asym ~ Num * Session * Group + (1 + Num| Animal)'
+    'Asym ~ Num * Session * Group + (1 + Num | Animal)'
   if (name != 'Exp4') {
     model.equation.intersplit <-
       'Asym ~ Num * Session + (1 + Num| Animal)'
@@ -86,28 +86,41 @@ if (!exists("is.built") || !is.built) {
       'Asym ~ Num * Session * Group + (1 + Num| Animal)'
   }
   
-  model.split <-
-    lmer(model.equation, data = data.split, REML = "false")
+  if (name == 'EXp4'){
+    model.split <-
+    lmer(model.equation, data = data.split, REML = "true", control = lmerControl(optimizer ="Nelder_Mead"))
   model.washout <-
-    lmer(model.equation, data = data.washout, REML = "false")
+    lmer(model.equation, data = data.washout, REML  = "true", control = lmerControl(optimizer ="Nelder_Mead"))
   model.intersplit <-
     lmer(model.equation.intersplit,
          data = data.intersplit,
-         REML = "false")
+         REML = "true", control = lmerControl(optimizer ="Nelder_Mead"))
   model.baseline <-
-    lmer(model.equation, data = data.baseline, REML = "false")
+    lmer(model.equation, data = data.baseline, REML = "true", control = lmerControl(optimizer ="Nelder_Mead"))
+  } else {
+    model.split <-
+      lmer(model.equation, data = data.split, REML = "true")
+    model.washout <-
+      lmer(model.equation, data = data.washout, REML  = "true")
+    model.intersplit <-
+      lmer(model.equation.intersplit,
+           data = data.intersplit,
+           REML = "true", control = lmerControl(optimizer ="Nelder_Mead"))
+    model.baseline <-
+      lmer(model.equation, data = data.baseline, REML = "true", control = lmerControl(optimizer ="Nel der_Mead"))
+  }
   
   modelsummary(model.split,
                stars = TRUE,
                metrics = c("RMSE", "R2"))
   
-  modelsummary(
-    model.split,
-    stars = TRUE,
-    estimate = "{estimate}({p.value})",
-    statistic = "[{conf.low}:{conf.high}]"
-  )
-  
+  # modelsummary(
+  #   model.split,
+  #   stars = TRUE,
+  #   estimate = "{estimate}({p.value})",
+  #   statistic = "[{conf.low}:{conf.high}]"
+  # )
+  # 
   if (!exists("useOld") || !useOld) {
     data.split.summary = summarise.predict(data.split, model.split, Experiment, Trial, Phase)
     data.washout.summary = summarise.predict(data.washout, model.washout, Experiment, Trial, Phase)

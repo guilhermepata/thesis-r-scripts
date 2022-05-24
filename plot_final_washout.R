@@ -1,5 +1,7 @@
-source("build_model.R")
+source("build_mega_model.R")
 source("my_functions.R")
+
+name = 'Exp3'
 
 # plot.final.washout <- function(washout.values,
 #                                group='NotAtaxic:Switch',
@@ -86,8 +88,8 @@ plot.final.washout <- function(data.washout,
 # for Exp3
 if (name == 'Exp3') {
   final.washout.num = max(filter(
-    data.washout.summary,
-    Group == 'NotAtaxic:Switch',
+    mega.data.washout.summary,
+    Group == 'Exp3:NotAtaxic:Switch',
     Session %in% c('S1', 'S2', 'S3', 'S4', 'S5'),
   )$Num)
   
@@ -97,13 +99,13 @@ if (name == 'Exp3') {
       ~ Session * Group,
       at = list(
         Session = c('S1', 'S2', 'S3', 'S4', 'S5'),
-        Group = 'NotAtaxic:Switch',
+        Group = 'Exp3:NotAtaxic:Switch',
         Num = final.washout.num
       )
     ), infer = TRUE
   )))
   
-  group = 'NotAtaxic:Switch'
+  group = 'Exp3:NotAtaxic:Switch'
   color = get_group_color(group)
   xlim = c('S1', 'S2', 'S3', 'S4', 'S5')
   
@@ -115,8 +117,8 @@ if (name == 'Exp3') {
   
   (
     plot.final.washout.switch = plot.final.washout(
-      data.washout,
-      data.washout.summary,
+      mega.data.washout,
+      mega.data.washout.summary,
       group = group,
       color = color,
       xlim = xlim

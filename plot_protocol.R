@@ -2,23 +2,26 @@ source('build_mega_model.R')
 
 
 plot.protocol <- function(data.summary,
-                          experiment,
                           group,
                           sessions = NULL,
-                          legend = TRUE) {
+                          legend = TRUE,
+                          pos = NULL) {
   if (is.null(sessions)) {
     sessions = unique(data.summary$Session)
   }
   if (legend) {
+    if (is.null(pos)){
     pos = c(0.93, 0.9)
+    }
   } else {
     pos = "null"
   }
   
   data.summary = filter(data.summary,
-                        Experiment == experiment,
                         Group == group,
                         Session %in% sessions)
+  
+  experiment = str_split(group, ':')[[1]][[1]]
   
   if (experiment == 'Exp4') {
     fast.speed = 0.275
@@ -48,8 +51,12 @@ plot.protocol <- function(data.summary,
   
   trial.range = c(min(data.summary$Trial) - 1, max(data.summary$Trial) + 1)
   
-  data.session.breaks = data.summary[match(unique(data.summary$Session), data.summary$Session),]$Trial
-  data.session.breaks = data.session.breaks[2:length(data.session.breaks)]
+  data.session.breaks = data.summary[match(sessions, data.summary$Session),]$Trial
+  if (length(data.session.breaks) == 1) {
+    data.session.breaks = c()
+  } else {
+    data.session.breaks = data.session.breaks[2:length(data.session.breaks)]
+  }
   
   split.trials = unique(filter(data.summary, Phase == 'Split')$Trial)
   ymax = rep(Inf, length(split.trials))
@@ -96,8 +103,8 @@ plot.protocol <- function(data.summary,
     ymax = ymax
   )
   
-  color.fast = 'red'
-  color.slow = 'blue'
+  color.fast = darken(get_group_color(group))
+  color.slow = lighten(get_group_color(group))
   
   
   p = ggplot(data.summary) +
@@ -167,12 +174,12 @@ plot.protocol <- function(data.summary,
     scale_colour_manual(
       name = "",
       labels = c("Fast limb", "Slow limb"),
-      values = c("red", "blue")
+      values = c(color.fast, color.slow)
     ) +
     scale_fill_manual(
       name = "",
       labels = c("Fast limb", "Slow limb"),
-      values = c("red", "blue")
+      values = c(color.fast, color.slow)
     ) +
     theme(
       legend.position = pos,
@@ -186,11 +193,23 @@ plot.protocol <- function(data.summary,
 }
 
 
+(plot.short.protocol = plot.protocol(mega.data.summary,
+                                     'Exp3:NotAtaxic:NoSwitch', sessions=c('S6'), pos ='bottom'))
+
+
 (plot.exp3.noswitch.protocol = plot.protocol(mega.data.summary,
-                                             'Exp3',
-                                             'NotAtaxic:NoSwitch'))
+                                             'Exp3:NotAtaxic:NoSwitch', legend=FALSE))
 (plot.exp3.switch.protocol = plot.protocol(mega.data.summary,
-                                             'Exp3',
-                                             'NotAtaxic:Switch',
+                                             'Exp3:NotAtaxic:Switch',
+                                           legend = FALSE))
+
+(plot.exp5.noswitch.protocol = plot.protocol(mega.data.summary,
+                                           'Exp5:NotAtaxic:NoSwitch',
+                                           legend = FALSE))
+(plot.exp5.switch.protocol = plot.protocol(mega.data.summary,
+                                           'Exp5:NotAtaxic:Switch',
+                                           legend = FALSE))
+(plot.exp4.protocol = plot.protocol(mega.data.summary,
+                                           'Exp4:NotAtaxic:Switch',
                                            legend = FALSE))
 

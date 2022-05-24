@@ -1,9 +1,8 @@
-name = 'Exp5'
 source("build_model_first_lr.R")
 source("my_functions.R")
 
 plot.initial.lr <- function(learning.rate.values,
-                            group = 'NotAtaxic:Switch',
+                            group = 'Exp3:NotAtaxic:Switch',
                             xlim = c('S1', 'S2', 'S3', 'S4', 'S5'),
                             color = '#619CFF')  {
   p = ggplot() +
@@ -63,8 +62,8 @@ if (name == 'Exp3') {
       var = 'Perc',
       at = list(Session = c('S1', 'S2', 'S3', 'S4', 'S5')
                 # Group='NotAtaxic:Switch' )
-      )$emtrends
-    ))
+      )
+    )$emtrends))
     
     secs_perc = 6
     learning.rate.values[3:7] <- learning.rate.values[3:7] / secs_perc
@@ -73,7 +72,7 @@ if (name == 'Exp3') {
     color = get_group_color(group)
     xlim = c('S1', 'S2', 'S3', 'S4', 'S5')
     
-    (plot.initial.lr = plot.initial.lr(
+    (plot.initial.lr.switch = plot.initial.lr(
       learning.rate.values,
       color = color,
       group = group,
@@ -93,7 +92,7 @@ if (name == 'Exp5') {
       at = list(Session = c('S1', 'S2', 'S3', 'S4', 'S5')
                 # Group='NotAtaxic:Switch' )
       )
-    ))
+    )))
    
    (learning.rate.values = as.data.frame(
      emtrends(
@@ -103,7 +102,7 @@ if (name == 'Exp5') {
        at = list(Session = c('S1', 'S2', 'S3', 'S4', 'S5')
                  # Group='NotAtaxic:Switch' )
        )$emtrends
-     ))
+     )))
      
      secs_perc = 6
      learning.rate.values[3:7] <- learning.rate.values[3:7] / secs_perc
@@ -153,7 +152,7 @@ if (name == 'Exp4') {
       at = list(Session = c('S1', 'S2', 'S3', 'S5')
                 # Group='NotAtaxic:Switch' )
       )
-    ))
+    )))
    
    (learning.rate.values = as.data.frame(
      emtrends(
@@ -163,7 +162,7 @@ if (name == 'Exp4') {
        at = list(Session = c('S1', 'S2', 'S3', 'S5')
                  # Group='NotAtaxic:Switch' )
        )$emtrends
-     ))
+     )))
      
      secs_perc = 6
      learning.rate.values[3:7] <- learning.rate.values[3:7] / secs_perc

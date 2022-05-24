@@ -1,10 +1,11 @@
-source("build_model.R")
+source("build_mega_model.R")
 source("my_functions.R")
 
-plot.change <- function(df, df.animals, color = '#619CFF') {
+plot.change <- function(df, df.animals, df.compare = NULL, color = '#619CFF') {
   color.light = lighten(color)
+  color.dark = darken(color)
   
-  ggplot() +
+  p = ggplot() +
     geom_point(
       data = df.animals,
       aes(x = Phase, y = Asym, group = Animal),
@@ -16,7 +17,7 @@ plot.change <- function(df, df.animals, color = '#619CFF') {
       aes(x = Phase, y = Asym, group = Animal),
       alpha = 0.5,
       color = color.light
-    ) +
+    )  +
     
     geom_point(
       data = df,
@@ -54,6 +55,31 @@ plot.change <- function(df, df.animals, color = '#619CFF') {
     ) +
     theme_classic() + theme(legend.position = "none") +
     labs(x = element_blank(), y = "Step length asym. (mm)")
+  
+  if (!is.null(df.compare)) {
+    p = p +
+      
+      geom_point(
+        data = df.compare,
+        aes(x = Phase, y = Fit),
+        size = 1,
+        stroke = 1,
+        shape = 2,
+        color = color.dark,
+        alpha = 0.8
+      ) +
+      geom_line(
+        data = df.compare,
+        aes(x = Phase, y = Fit, group = 0),
+        size  = .7,
+        color = color.dark,
+        linetype = "dashed",
+        alpha = 0.8
+      ) 
+    
+  }
+    
+  return(p)
 }
 
 make_change_df <- function(data.summary,
@@ -190,6 +216,7 @@ make_change_df_animals <- function(data.split,
       Asym = c(
         filter(
           data.washout,
+          Group == group,
           Session == washout.session &
             Num == washout.num &
             Animal == animal
@@ -207,22 +234,34 @@ make_change_df_animals <- function(data.split,
 if (name != 'Exp4') {
   ### plot switch group
   
-  group = 'NotAtaxic:Switch'
+  group = paste(name, 'NotAtaxic:Switch', sep=':')
   color = get_group_color(group)
   
   df.switch <- make_change_df(
-    data.summary,
+    mega.data.summary,
     model.split,
     model.washout,
     group = group,
     sessions.split = c('S1', 'S5')
   )
   
+  if (name == 'Exp5') {
+    df.compare = make_change_df(
+      mega.data.summary,
+      model.split,
+      model.washout,
+      group = 'Exp3:NotAtaxic:Switch',
+      sessions.split = c('S1', 'S5')
+    )
+  } else {
+    df.compare = NULL
+  }
+  
   
   df.animals.switch = make_change_df_animals(
-    data.split,
-    data.washout,
-    data.summary,
+    mega.data.split,
+    mega.data.washout,
+    mega.data.summary,
     model.split,
     model.washout,
     group = group,
@@ -230,7 +269,7 @@ if (name != 'Exp4') {
   )
   
   plot.change.switch <-
-    plot.change(df.switch, df.animals.switch, color = color)
+    plot.change(df.switch, df.animals.switch, color = color, df.compare = df.compare)
   
   
   ### plot noswitch group
@@ -241,11 +280,11 @@ if (name != 'Exp4') {
     sessions.split = c('S1', 'S5')
   }
   
-  group = 'NotAtaxic:NoSwitch'
+  group = paste(name, 'NotAtaxic:NoSwitch', sep=':')
   color = get_group_color(group)
   
   df.noswitch <- make_change_df(
-    data.summary,
+    mega.data.summary,
     model.split,
     model.washout,
     group = group,
@@ -254,9 +293,9 @@ if (name != 'Exp4') {
   
   
   df.animals.noswitch = make_change_df_animals(
-    data.split,
-    data.washout,
-    data.summary,
+    mega.data.split,
+    mega.data.washout,
+    mega.data.summary,
     model.split,
     model.washout,
     group = group,
@@ -270,25 +309,25 @@ if (name != 'Exp4') {
 if (name == 'Exp4') {
   ## plot not ataxic
   
-  group = 'NotAtaxic:NoSwitch'
+  group = paste(name, 'NotAtaxic:Switch', sep=':')
   color = get_group_color(group)
   
   df.switch <- make_change_df(
-    data.summary,
+    mega.data.summary,
     model.split,
     model.washout,
-    group = 'NotAtaxic:Switch',
+    group = group,
     sessions.split = c('S1', 'S2')
   )
   
   
   df.animals.switch = make_change_df_animals(
-    data.split,
-    data.washout,
-    data.summary,
+    mega.data.split,
+    mega.data.washout,
+    mega.data.summary,
     model.split,
     model.washout,
-    group = 'NotAtaxic:Switch',
+    group = group,
     sessions.split = c('S1', 'S2')
   )
   

@@ -87,6 +87,11 @@ make_change_df <- function(data.summary,
                            model.washout,
                            group,
                            sessions.split = c('S1', 'S5')) {
+  sessions.test = sessions.split
+  if (length(sessions.split) == 1) {
+    sessions.split = c(sessions.split[[1]], sessions.split[[1]])
+  }
+  
   data.summary2 = filter(data.summary, Group == group)
   
   first.trial = min(filter(data.summary2, Phase == 'Split',
@@ -108,11 +113,15 @@ make_change_df <- function(data.summary,
   washout.num = washout.row$Num
   washout.session = washout.row$Session
   
+  # if (length(sessions.split) == 1) {
+  #   sessions = 
+  # }
+  
   s.split = summary(emmeans(
     model.split,
     revpairwise ~ Num * Session * Group,
     at = list(
-      Session = c(first.session, last.session),
+      Session = sessions.test,
       Num = c(first.num, last.num),
       Group = group
     )
@@ -163,6 +172,10 @@ make_change_df_animals <- function(data.split,
                                    model.washout,
                                    group,
                                    sessions.split = c('S1', 'S5')) {
+  sessions.test = sessions.split
+  if (length(sessions.split)  == 1) {
+    sessions.split = c(sessions.split[[1]], sessions.split[[1]])
+  }
   data.summary2 = filter(data.summary, Group == group)
   
   first.trial = min(filter(data.summary2, Phase == 'Split',
@@ -188,7 +201,21 @@ make_change_df_animals <- function(data.split,
                           Asym = c(),
                           Animal = c())
   
-  for (animal in unique(filter(data.split, Group == group)$Animal)) {
+  animal_lists = list(
+    filter(data.split, Group == group, Session == first.session, Num == first.num)$Animal,
+    filter(
+      data.split,
+      Session == first.session,
+        Num == first.num)$Animal,
+    filter(
+      data.washout,
+      Group == group,
+      Session == washout.session)$Animal
+    )
+  
+  animals = Reduce(intersect, animal_lists)
+  
+  for (animal in animals) {
     df.aux = data.frame(
       Phase = c('Change over split'),
       Asym = c(
@@ -210,7 +237,7 @@ make_change_df_animals <- function(data.split,
     df.animals = rbind(df.animals, df.aux)
   }
   
-  for (animal in unique(filter(data.washout, Group == group)$Animal)) {
+  for (animal in animals) {
     df.aux = data.frame(
       Phase = c('After effect'),
       Asym = c(
@@ -305,6 +332,68 @@ if (name != 'Exp4') {
   plot.change.noswitch <-
     plot.change(df.noswitch, df.animals.noswitch, color = color)
 }
+
+if (name == 'Exp3') {
+  # plot s6
+  
+  group = paste(name, 'NotAtaxic:Switch', sep=':')
+  color = get_group_color(group)
+  
+  df.switch.s6 <- make_change_df(
+    mega.data.summary,
+    model.split,
+    model.washout,
+    group = group,
+    sessions.split = c('S6')
+  )
+  
+  df.compare = df.switch
+
+  
+  df.animals.switch.s6 = make_change_df_animals(
+    mega.data.split,
+    mega.data.washout,
+    mega.data.summary,
+    model.split,
+    model.washout,
+    group = group,
+    sessions.split = c('S6')
+  )
+  
+  plot.change.switch.s6 <-
+    plot.change(df.switch.s6, df.animals.switch.s6, color = color, df.compare = df.compare)
+  
+  
+  group = paste(name, 'NotAtaxic:NoSwitch', sep=':')
+  color = get_group_color(group)
+  
+  df.noswitch.s6 <- make_change_df(
+    mega.data.summary,
+    model.split,
+    model.washout,
+    group = group,
+    sessions.split = c('S6')
+  )
+  
+  df.compare = df.noswitch
+  
+  
+  df.animals.noswitch.s6 = make_change_df_animals(
+    mega.data.split,
+    mega.data.washout,
+    mega.data.summary,
+    model.split,
+    model.washout,
+    group = group,
+    sessions.split = c('S6')
+  )
+  
+  plot.change.noswitch.s6 <-
+    plot.change(df.noswitch.s6, df.animals.noswitch.s6, color = color, df.compare = df.compare)
+}
+
+
+
 
 if (name == 'Exp4') {
   ## plot not ataxic

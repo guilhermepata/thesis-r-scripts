@@ -87,7 +87,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
         rel_heights = c(2, 1)
       )
     )
-  } else if (FALSE && name == 'Exp3' && name == 'Exp5') {
+  } else if (TRUE || FALSE && name == 'Exp3' && name == 'Exp5') {
     for (i in 1:length(plotlist)) {
       plotlist[[i]] = plotlist[[i]] +
         theme(plot.margin = unit(c(0.25, 0.25, 0.25, 1), "cm"))
@@ -115,7 +115,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
       align = "Vh"
     ))
     
-  } else if (TRUE) {
+  } else if (FALSE) {
     for (i in 1:length(plotlist)) {
       plotlist[[i]] = plotlist[[i]] +
         theme(plot.margin = unit(c(0.25, 0.25, 0.25, 1), "cm"))

@@ -198,9 +198,10 @@ plot.protocol <- function(data.summary,
 
 
 (plot.exp3.noswitch.protocol = plot.protocol(mega.data.summary,
-                                             'Exp3:NotAtaxic:NoSwitch', legend=FALSE))
+                                             'Exp3:NotAtaxic:NoSwitch', sessions = c('S1','S2','S3','S4','S5'), legend=FALSE))
 (plot.exp3.switch.protocol = plot.protocol(mega.data.summary,
                                              'Exp3:NotAtaxic:Switch',
+                                           sessions = c('S1','S2','S3','S4','S5'),
                                            legend = FALSE))
 
 (plot.exp5.noswitch.protocol = plot.protocol(mega.data.summary,

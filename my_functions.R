@@ -163,7 +163,7 @@ summarise.predict <- function(data, model, ...) {
   
   
   for (i in 1:nrow(newdata)) {
-    row = newdata[i, ]
+    row = newdata[i,]
     num = row$Num
     session = row$Session
     group = row$Group
@@ -171,11 +171,11 @@ summarise.predict <- function(data, model, ...) {
       predict = filter(predict.big,
                        Num == num,
                        Session == session,
-                       Group == group)[1, ]
+                       Group == group)[1,]
     } else {
       predict = filter(predict.big,
                        Num == num,
-                       Session == session,)[1, ]
+                       Session == session, )[1,]
     }
     
     predict.aux = data.frame(
@@ -216,12 +216,24 @@ get_group_color <- function(group) {
   }
   group.parts = str_split(group, ":")[[1]]
   if (grepl('Exp', group.parts[[1]])) {
+    name = group.parts[[1]]
     group = paste(group.parts[[2]], group.parts[[3]], sep = ':')
   }
   if (group == 'NotAtaxic:NoSwitch') {
-    return('slategray')
+    if (name  == 'Exp3') {
+      return('slategray')
+    } else {
+      return('lightgoldenrod4')
+    }
   } else if (group == 'NotAtaxic:Switch') {
-    return('tan2')
+    if (name == 'Exp3') {
+      return('tan2')
+    }
+    else if (name == 'Exp5') {
+      return('tomato2')
+    } else {
+      return('lightsalmon2')
+    }
   } else if (group == 'Ataxic:Switch') {
     return('lightslateblue')
   }
@@ -236,15 +248,64 @@ continuous.shades.frame <- function(shades.frame) {
   shades.frame = arrange(shades.frame, Trial)
   to.remove = list()
   for (i in 1:nrow(shades.frame)) {
-    if (!shades.frame[i, ]$Trial %in% to.remove) {
+    if (!shades.frame[i,]$Trial %in% to.remove) {
       delta = 0
-      while (i + delta + 1 <= nrow(shades.frame) && shades.frame[i + delta + 1, ]$Trial - shades.frame[i + delta, ]$Trial == 1)
+      while (i + delta + 1 <= nrow(shades.frame) &&
+             shades.frame[i + delta + 1,]$Trial - shades.frame[i + delta,]$Trial == 1)
       {
-        to.remove = append(to.remove, shades.frame[i + delta + 1, ]$Trial)
-        shades.frame[i, ]$xmax = shades.frame[i + delta + 1, ]$xmax
+        to.remove = append(to.remove, shades.frame[i + delta + 1,]$Trial)
+        shades.frame[i,]$xmax = shades.frame[i + delta + 1,]$xmax
         delta = delta + 1
       }
     }
   }
-  shades.frame = filter(shades.frame, !Trial %in% to.remove)
+  shades.frame = filter(shades.frame,!Trial %in% to.remove)
+}
+
+
+fill.missing.data = function(data, model) {
+  data$Was.missing = rep(FALSE, nrow(data))
+  for (group in unique(data$Group)) {
+    data.scope0 = filter(data, Group == group)
+    for (session in unique(data.scope0$Session)) {
+      data.scope1 = filter(data.scope0, Session == session)
+      num.range = min(data.scope1$Num):max(data.scope1$Num)
+      trial.range = rep(NA, length(num.range))
+      for (i in 1:length(num.range)) {
+        trial.range[[i]] = unique(filter(data.scope1, Num == num.range[[i]])$Trial)[[1]]
+      }
+      for (animal in unique(data.scope0$Animal)) {
+        data.scope2 = filter(data.scope1, Animal == animal)
+        for (i in 1:length(num.range)) {
+          num = num.range[[i]]
+          trial = trial.range[[i]]
+          data.scope3 = filter(data.scope2, Num == num)
+          if (nrow(data.scope3) == 0) {
+            data[nrow(data) + 1, ] = NA
+            data[nrow(data), ]$Group = group
+            data[nrow(data), ]$Session = session
+            data[nrow(data), ]$Animal = animal
+            data[nrow(data), ]$Num = num
+            data[nrow(data), ]$Trial = trial
+            data[nrow(data), ]$Fit = predict(model, newdata = data[nrow(data), ])
+            data[nrow(data), ]$Was.missing = TRUE
+          }
+        }
+      }
+    }
+  }
+  data = arrange(data, Experiment, Group, Animal, Trial)
+  return(data)
+}
+
+predict.fit = function(data, model, fill.missing = TRUE) {
+  if ("Fit" %in% colnames(data)) {
+    data$Fit = predict(model, newdata = data)
+  } else
+  {
+    data = cbind(data, Fit = predict(model, newdata = data))
+  }
+  if (fill.missing) {
+    data = fill.missing.data(data, model)
+  }
 }

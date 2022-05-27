@@ -5,6 +5,12 @@ plot.change <- function(df, df.animals, df.compare = NULL, color = '#619CFF') {
   color.light = lighten(color)
   color.dark = darken(color)
   
+  # df.animals.norm = df.animals
+  # df.animals.norm["Change over split"]$Asym =  df.animals.norm["Change over split"]$Asym / df.animals.norm["Initial error"]$Asym
+  # df.animals.norm["After effect"]$Asym =  df.animals.norm["After effect"]$Asym  / df.animals.norm["Initial error"]$Asym 
+  # 
+  df.mean = summarise(group_by(df.animals, Phase), Asym = mean(Asym), Fit = mean(Fit))
+  
   p = ggplot() +
     geom_point(
       data = df.animals,
@@ -199,7 +205,8 @@ make_change_df_animals <- function(data.split,
   
   df.animals = data.frame(Phase = c(),
                           Asym = c(),
-                          Animal = c())
+                          Animal = c(),
+                          Fit = c())
   
   animal_lists = list(
     filter(data.split, Group == group, Session == first.session, Num == first.num)$Animal,
@@ -232,6 +239,20 @@ make_change_df_animals <- function(data.split,
               Animal == animal
           )$Asym
       ),
+      Fit = c(
+        filter(
+          data.split,
+          Session == last.session &
+            Num == last.num &
+            Animal == animal
+        )$Fit -
+          filter(
+            data.split,
+            Session == first.session &
+              Num == first.num &
+              Animal == animal
+          )$Fit
+      ),
       Animal = c(animal)
     )
     df.animals = rbind(df.animals, df.aux)
@@ -248,6 +269,41 @@ make_change_df_animals <- function(data.split,
             Num == washout.num &
             Animal == animal
         )$Asym
+      ),
+      Fit = c(
+        filter(
+          data.washout,
+          Group == group,
+          Session == washout.session &
+            Num == washout.num &
+            Animal == animal
+        )$Fit
+      ),
+      Animal = c(animal)
+    )
+    df.animals = rbind(df.animals, df.aux)
+  }
+  
+  for (animal in animals) {
+    df.aux = data.frame(
+      Phase = c('Initial error'),
+      Asym = c(
+        filter(
+          data.split,
+          Group == group,
+          Session == first.session &
+            Num == first.num &
+            Animal == animal
+        )$Asym
+      ),
+      Fit = c(
+        filter(
+          data.split,
+          Group == group,
+          Session == first.session &
+            Num == first.num &
+            Animal == animal
+        )$Fit
       ),
       Animal = c(animal)
     )

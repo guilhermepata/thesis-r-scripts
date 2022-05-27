@@ -1,3 +1,4 @@
+name = 'Exp5'
 source("build_model_first_lr.R")
 source("my_functions.R")
 
@@ -101,8 +102,8 @@ if (name == 'Exp5') {
        var = 'Perc',
        at = list(Session = c('S1', 'S2', 'S3', 'S4', 'S5')
                  # Group='NotAtaxic:Switch' )
-       )$emtrends
-     )))
+       ))$emtrends
+     ))
      
      secs_perc = 6
      learning.rate.values[3:7] <- learning.rate.values[3:7] / secs_perc

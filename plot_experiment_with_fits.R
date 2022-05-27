@@ -5,7 +5,7 @@ source("build_mega_model.R")
 
 sessions = c('S1', 'S2', 'S3', 'S4', 'S5')
 
-plot.experiment <- function(data, data.summary, color = '#619CFF') {
+plot.experiment <- function(data, data.summary, color = '#619CFF', show.animals = FALSE, show.fit = TRUE) {
   data.median = data %>%
     group_by(Trial, Session, Phase) %>%
     summarise(Median = median(Asym))
@@ -15,7 +15,7 @@ plot.experiment <- function(data, data.summary, color = '#619CFF') {
   
   trial.range = c(min(data.mean$Trial) - 1, max(data.mean$Trial) + 1)
   
-  data.session.breaks = data.mean[match(unique(data.mean$Session), data.mean$Session),]$Trial
+  data.session.breaks = data.mean[match(unique(data.mean$Session), data.mean$Session), ]$Trial
   data.session.breaks = data.session.breaks[2:length(data.session.breaks)]
   
   split.trials = filter(data.mean, Phase == 'Split')$Trial
@@ -45,44 +45,58 @@ plot.experiment <- function(data, data.summary, color = '#619CFF') {
       ymin = shades.frame$ymin,
       ymax = shades.frame$ymax,
       alpha = 0.2
+    )
+  
+  if (show.animals) {
+    p = p + geom_point(
+      aes(y = Asym),
+      alpha = 0.5,
+      size = 1,
+      shape = 21,
+      fill = color.light,
+      color = color.light
     ) +
-    
-    # geom_point(aes(y=Asym), alpha = 0.5, size=1, shape=21, fill=color.light, color=color.light) +
-    # geom_line(aes(y=Asym, group=Animal), color=color.light, alpha = 0.5) +
-    
-    
-    geom_line(
+      geom_line(aes(y = Asym, group = Animal),
+                color = color.light,
+                alpha = 0.5)
+  }
+  
+  
+  
+  if (show.fit) {
+    p  = p +  geom_line(
       data = data.summary,
       aes(y = Fit, group = interaction(Session, Phase)),
       fill = color,
       size = .5,
       alpha = 0.75
     ) +
-    # geom_point(data = data.summary, aes(y=Fit, group=0), size=1.5, color=color, alpha = 0.6) +
-    # geom_errorbar(data = data.summary, aes(y=Fit, ymin=Lower, ymax=Upper, group=0), color=color, alpha = 1, size = 0.5, width=0.5) +
-    geom_ribbon(
-      data = data.summary,
-      aes(
-        y = Fit,
-        ymin = Lower,
-        ymax = Upper,
-        group = interaction(Session, Phase)
-      ),
-      fill = color,
-      alpha = 0.5,
-      size = 0.5,
-      width = 0.5
-    ) +
-    
-    geom_point(
-      data = data.mean,
-      aes(y = Mean, group = interaction(Session, Phase)),
-      color = color.dark,
-      fill = color.dark,
-      size = 1.5,
-      shape = 21,
-      alpha = 0.6
-    ) +
+      # geom_point(data = data.summary, aes(y=Fit, group=0), size=1.5, color=color, alpha = 0.6) +
+      # geom_errorbar(data = data.summary, aes(y=Fit, ymin=Lower, ymax=Upper, group=0), color=color, alpha = 1, size = 0.5, width=0.5) +
+      geom_ribbon(
+        data = data.summary,
+        aes(
+          y = Fit,
+          ymin = Lower,
+          ymax = Upper,
+          group = interaction(Session, Phase)
+        ),
+        fill = color,
+        alpha = 0.5,
+        size = 0.5,
+        width = 0.5
+      )
+  }
+  
+  p = p + geom_point(
+    data = data.mean,
+    aes(y = Mean, group = interaction(Session, Phase)),
+    color = color.dark,
+    fill = color.dark,
+    size = 1.5,
+    shape = 21,
+    alpha = 0.6
+  ) +
     geom_line(
       data = data.mean,
       aes(y = Mean, group = interaction(Session, Phase)),
@@ -105,26 +119,30 @@ plot.experiment <- function(data, data.summary, color = '#619CFF') {
 
 ### Plot switch group
 
-{group = paste(name, 'NotAtaxic:Switch', sep=':')
-
-data.switch <- filter(mega.data, Group == group, Session %in% sessions)
-data.switch.summary <-
-  filter(mega.data.summary, Group == group)
-
-color = get_group_color(group)
-
-(
-  plot.experiment.switch <-
-    plot.experiment(data.switch, data.switch.summary, color = color)
-)}
+{
+  group = paste(name, 'NotAtaxic:Switch', sep = ':')
+  
+  data.switch <-
+    filter(mega.data, Group == group, Session %in% sessions)
+  data.switch.summary <-
+    filter(mega.data.summary, Group == group)
+  
+  color = get_group_color(group)
+  
+  (
+    plot.experiment.switch <-
+      plot.experiment(data.switch, data.switch.summary, color = color)
+  )
+}
 
 
 ### Plot noswitch group
 
 if (name != 'Exp4') {
-  group = paste(name, 'NotAtaxic:NoSwitch', sep=':')
+  group = paste(name, 'NotAtaxic:NoSwitch', sep = ':')
   
-  data.noswitch <- filter(mega.data, Group == group, Session %in% sessions)
+  data.noswitch <-
+    filter(mega.data, Group == group, Session %in% sessions)
   data.noswitch.summary <-
     filter(mega.data.summary, Group == group)
   
@@ -139,9 +157,10 @@ if (name != 'Exp4') {
 ### Plot ataxic group
 
 if (name == 'Exp4') {
-  group = paste(name, 'Ataxic:Switch', sep=':')
+  group = paste(name, 'Ataxic:Switch', sep = ':')
   
-  data.ataxic <- filter(mega.data, Group == group, Session %in% sessions)
+  data.ataxic <-
+    filter(mega.data, Group == group, Session %in% sessions)
   data.ataxic.summary <-
     filter(mega.data.summary, Group == group)
   

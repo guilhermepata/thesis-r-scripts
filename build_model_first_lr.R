@@ -76,7 +76,7 @@ if (!exists("is.builtLR") || !is.builtLR) {
     'Asym ~ Perc * Session * Group + (1 + Perc| Animal)'
   
   model.first.lr <-
-    lmer(model.equation.lr, data = data.first.lr, REML = "true")
+    lmer(model.equation.lr, data = data.first.lr, REML = "true", )
   
   modelsummary(model.first.lr,
                stars = TRUE,

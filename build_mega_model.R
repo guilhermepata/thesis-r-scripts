@@ -80,6 +80,7 @@ if (!exists("is.built") || !is.built) {
     # }
     data_frame <- data_frame[!is.na(data_frame$Asym), ]
     data_frame = filter(data_frame, Phenotype != 'HalfAtaxic')
+    data_frame = filter(data_frame, Animal != 'NoSwitch03')
     data_frame = cbind(Experiment = rep(name, nrow(data_frame)),
                        data_frame,
                        stringsAsFactors = TRUE)
@@ -161,63 +162,13 @@ if (!exists("is.built") || !is.built) {
   
   mega.data.summary = arrange(mega.data.summary, Experiment, Group, Trial)
   
-  # old.data.summary = rbind(data.summaries[[1]], data.summaries[[2]], data.summaries[[3]])
-  # old.data.summary = arrange(old.data.summary, Experiment, Group, Trial)
-  #
-  # average.error <- function(c1, c2) {
-  #   return(mean(abs(c1 - c2)) / mean(c(mean(abs(
-  #     c1
-  #   )), mean(abs(
-  #     c2
-  #   )))))
-  # }
-  #
-  # max.error <- function(c1, c2) {
-  #   return(max(abs(c1 - c2)) / mean(c(mean(abs(
-  #     c1
-  #   )), mean(abs(
-  #     c2
-  #   )))))
-  # }
-  #
-  # old.fit = old.data.summary$Fit
-  # new.fit = mega.data.summary$Fit
-  #
-  # compare.fits = data.frame(Old = old.fit,
-  #                           New = new.fit,
-  #                           Difference = old.fit - new.fit)
-  # compare.fits = cbind(mega.data.summary[c(1, 2, 3, 4, 5, 6)], compare.fits)
-  # rel.log = ((compare.fits$New / compare.fits$Old))
-  # compare.fits = cbind(compare.fits, Rel.log.diff = rel.log)
-  #
-  # test = average.error(old.fit, new.fit)
-  #
-  # hist(
-  #   compare.fits$Rel.log.diff,
-  #   breaks = 1000,
-  #   xlim = c(0.90, 1.10),
-  #   main = 'Histogram of the ratio between \n the "mega model" and the joined models',
-  #   xlab = 'Ratio between mega model prediction and old prediction'
-  # )
-  #
-  # compare.r2 = data.frame()
-  # for (name in c('Exp3', 'Exp5', 'Exp4')) {
-  #   for (phase in unique(mega.data.summary$Phase)) {
-  #     if (phase == 'Split') {
-  #       aux = cbind(Experiment = name, Phase = phase, r.squaredGLMM(models[name][[1]][[1]]))
-  #     }
-  #     if (phase == 'Washout') {
-  #       aux = cbind(Experiment = name, Phase = phase, r.squaredGLMM(models[name][[1]][[2]]))
-  #     }
-  #     if (phase == 'Intersplit') {
-  #       aux = cbind(Experiment = name, Phase = phase, r.squaredGLMM(models[name][[1]][[3]]))
-  #     }
-  #     if (phase == 'Baseline') {
-  #       aux = cbind(Experiment = name, Phase = phase, r.squaredGLMM(models[name][[1]][[4]]))
-  #     }
-  #     compare.r2 = rbind(compare.r2, aux)
-  #   }
-  # }
+  mega.data.split = predict.fit(mega.data.split, model.split)
+  mega.data.washout = predict.fit(mega.data.washout, model.washout)
+  mega.data.baseline = predict.fit(mega.data.baseline, model.baseline)
+  mega.data.intersplit = predict.fit(mega.data.intersplit, model.intersplit)
+  
+  mega.data.aux = rbind(mega.data.split, mega.data.washout, mega.data.baseline, mega.data.intersplit)
+  mega.data = arrange(mega.data.aux, Experiment, Group, Animal, Trial)
   
   is.built = TRUE
   

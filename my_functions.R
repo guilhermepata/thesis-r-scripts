@@ -309,3 +309,11 @@ predict.fit = function(data, model, fill.missing = TRUE) {
     data = fill.missing.data(data, model)
   }
 }
+
+get_group_colors = function(groups) {
+  res = c()
+  for (group in groups) {
+    res[group] = get_group_color(group)
+  }
+  return(res)
+}

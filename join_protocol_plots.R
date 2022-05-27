@@ -51,8 +51,8 @@ p = cowplot::plot_grid(
 
 
 ggsave(plot = p,
-  paste("plots/", "protocol_plot", ".png", sep = ""),
-  # device = cairo_pdf,
+  paste("plots/", "protocol_plot", ".pdf", sep = ""),
+  device = cairo_pdf,
   width = 8.27,
   height = 11.69
 )

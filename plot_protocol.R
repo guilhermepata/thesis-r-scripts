@@ -104,7 +104,7 @@ plot.protocol <- function(data.summary,
   )
   
   color.fast = darken(get_group_color(group))
-  color.slow = lighten(get_group_color(group))
+  color.slow = get_group_color(group)
   
   
   p = ggplot(data.summary) +
@@ -114,10 +114,13 @@ plot.protocol <- function(data.summary,
     
     geom_rect(
       data = split.shades.frame,
+      aes(
       xmin = split.shades.frame$xmin,
       xmax = split.shades.frame$xmax,
       ymin = split.shades.frame$ymin,
       ymax = split.shades.frame$ymax,
+      fill = 'Split-belt'
+      ),
       alpha = 0.2
     ) +
     
@@ -126,13 +129,12 @@ plot.protocol <- function(data.summary,
       aes(
         x = Trial,
         y = Slow,
-        color = 'Slow limb',
-        fill = 'Slow limb'
+        color = 'Slow limb'
       ),
       # color = color.slow,
       # fill = color.slow,
       size = 1.5,
-      shape = 22,
+      shape = 15,
     ) +
     geom_line(data = data.summary,
               aes(x = Trial, y = Slow, color = 'Slow limb'),
@@ -145,13 +147,12 @@ plot.protocol <- function(data.summary,
       aes(
         x = Trial,
         y = Fast,
-        color = 'Fast limb',
-        fill = 'Fast limb'
+        color = 'Fast limb'
       ),
       # color = color.fast,
       # fill = color.fast,
       size = 1.5,
-      shape = 22,
+      shape = 15,
     ) +
     geom_line(data = data.summary,
               aes(x = Trial, y = Fast, color = 'Fast limb'),
@@ -178,8 +179,8 @@ plot.protocol <- function(data.summary,
     ) +
     scale_fill_manual(
       name = "",
-      labels = c("Fast limb", "Slow limb"),
-      values = c(color.fast, color.slow)
+      labels = c("Split belt"),
+      values = c('black')
     ) +
     theme(
       legend.position = pos,
@@ -192,9 +193,17 @@ plot.protocol <- function(data.summary,
   return(p)
 }
 
+short.df = data.frame(Group = rep('Exp3:NotAtaxic:NoSwitch', 21),
+                      Session = rep('S1', 21),
+                      Trial = 1:21,
+                      Phase = c(rep('Baseline', 3),
+                                rep('Split', 9),
+                                rep('Washout', 9))
+                      )
 
-(plot.short.protocol = plot.protocol(mega.data.summary,
-                                     'Exp3:NotAtaxic:NoSwitch', sessions=c('S6'), pos ='bottom'))
+
+(plot.short.protocol = plot.protocol(short.df,
+                                     'Exp3:NotAtaxic:NoSwitch', sessions=c('S1'), pos ='right'))
 
 
 (plot.exp3.noswitch.protocol = plot.protocol(mega.data.summary,

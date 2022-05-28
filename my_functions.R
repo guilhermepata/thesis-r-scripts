@@ -317,3 +317,35 @@ get_group_colors = function(groups) {
   }
   return(res)
 }
+
+skip_comp.emmc <- function(levels,
+                           skip = 1,
+                           reverse = FALSE) {
+  if ((k <- length(levels)) < skip + 1)
+    stop("Need at least ", skip + 1, " levels")
+  coef <- data.frame()
+  coef <- as.data.frame(lapply(seq_len(k - skip - 1), function(i) {
+    sgn <- ifelse(reverse,-1, 1)
+    sgn * c(rep(0, i - 1), 1, rep(0, skip),-1, rep(0, k - i - skip - 1))
+  }))
+  names(coef) <- sapply(coef, function(x)
+    paste(which(x == 1), "-", which(x == -1)))
+  attr(coef, "adjust") = "fdr"   # default adjustment method
+  coef
+}
+
+consec_avg.emmc <- function(levels, reverse = FALSE) {
+  if ((k <- length(levels)) < + 1)
+    stop("Need at least ", 1, " levels")
+  coef.aux <- data.frame()
+  coef.aux <- as.data.frame(lapply(seq_len(k - 1), function(i) {
+    sgn <- ifelse(reverse,-1, 1)
+    sgn * c(rep(0, i - 1), 1,-1, rep(0, k - i - 1))
+  }))
+  # coef = data.frame()
+  coef = data.frame(Avg = rowSums(coef.aux, na.rm=TRUE) / (k-1))
+  names(coef) <- sapply(coef, function(x)
+    paste("(", which(x == 1/(k-1)), " - ", which(x == -1/(k-1)), ") / ", toString(k-1), sep = ""))
+  attr(coef, "adjust") = "fdr"   # default adjustment method
+  coef
+}

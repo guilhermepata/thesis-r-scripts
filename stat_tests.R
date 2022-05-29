@@ -55,11 +55,11 @@
 {if (name == 'Exp3') {
   switch.group.test.at = list(Session=c('S5', 'S4', 'S3', 'S2', 'S1'), Num=4, Group='NotAtaxic:Switch')
 } else if (name == 'Exp5') {
-  switch.group.test.at = list(Session=c('S5', 'S4', 'S3', 'S2', 'S1'), Num=0, Group='NotAtaxic:Switch')
+  switch.group.test.at = list(Session=c('S5', 'S4', 'S3', 'S2', 'S1'), Num=0)
 }
   
 (error.reduction.test = summary(emmeans(
-  model.split, pairwise ~ Session, 
+  model.split, pairwise ~ Session | Group, 
   at=switch.group.test.at)$contrasts))
 (after.effect.test = summary(emmeans(
   model.washout, ~ Session, 
@@ -123,3 +123,22 @@
     # Session = c('S3','S5')
   ))$contrasts, infer=TRUE))
 
+
+
+##### 
+
+(error.reduction.test = summary(emmeans(
+  model.split, revconsecavg ~ Num * Session | Group,  
+  at=list(Session=c('S1','S2','S3','S4','S5'), 
+          Num=c(0),
+          Group = c('Exp3:NotAtaxic:Switch', 'Exp5:NotAtaxic:NoSwitch', 'Exp5:NotAtaxic:Switch')
+          ),infer = TRUE)$contrasts
+  ))
+
+(error.reduction.test.exp4 = summary(emmeans(
+  model.split, revconsecavg ~ Num * Session | Group,  
+  at=list(Session=c('S1','S2','S3'), 
+          Num=c(0),
+          Group = c('Exp4:Ataxic:Switch', 'Exp4:NotAtaxic:Switch')
+  ),infer = TRUE)$contrasts
+))

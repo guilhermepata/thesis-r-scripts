@@ -320,7 +320,7 @@ get_group_colors = function(groups) {
 
 skip_comp.emmc <- function(levels,
                            skip = 1,
-                           reverse = FALSE) {
+                           reverse = FALSE, ...) {
   if ((k <- length(levels)) < skip + 1)
     stop("Need at least ", skip + 1, " levels")
   coef <- data.frame()
@@ -334,8 +334,12 @@ skip_comp.emmc <- function(levels,
   coef
 }
 
-consec_avg.emmc <- function(levels, reverse = FALSE) {
-  if ((k <- length(levels)) < + 1)
+revconsecavg.emmc <- function(levels, exclude = integer(0), reverse = FALSE, ...) {
+  reverse = !reverse
+  if (!is.integer0(exclude)) {
+    levels = levels[-exclude]
+  }
+  if ((k <- length(levels)) < 1 + 1)
     stop("Need at least ", 1, " levels")
   coef.aux <- data.frame()
   coef.aux <- as.data.frame(lapply(seq_len(k - 1), function(i) {
@@ -344,8 +348,16 @@ consec_avg.emmc <- function(levels, reverse = FALSE) {
   }))
   # coef = data.frame()
   coef = data.frame(Avg = rowSums(coef.aux, na.rm=TRUE) / (k-1))
+  names(coef.aux) <- sapply(coef.aux, function(x)
+    paste(which(x == 1), "-", which(x == -1)))
   names(coef) <- sapply(coef, function(x)
     paste("(", which(x == 1/(k-1)), " - ", which(x == -1/(k-1)), ") / ", toString(k-1), sep = ""))
+  coef = cbind(coef, coef.aux)
   attr(coef, "adjust") = "fdr"   # default adjustment method
   coef
+}
+
+is.integer0 <- function(x)
+{
+  is.integer(x) && length(x) == 0L
 }

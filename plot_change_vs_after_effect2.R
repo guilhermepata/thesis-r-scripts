@@ -9,7 +9,10 @@ plot.change <-
            model.washout,
            groups,
            sessions.split = NULL,
-           plot.ratio = FALSE) {
+           normalized = FALSE,
+           limited = FALSE,
+           plot.ratio = FALSE,
+           ratio.of.means = FALSE) {
     df.animals = make_change_df_animals(
       data.split,
       data.washout,
@@ -24,28 +27,32 @@ plot.change <-
     df.mean = summarise(
       group_by(df.animals, Type, Group),
       Asym.recov = median(Asym.recov),
+      Asym.recov.norm = median(Asym.recov.norm),
       After.effect = median(After.effect),
-      Ratio = mean(After.effect) / mean(Asym.recov)
+      After.effect.norm = median(After.effect.norm),
+      Ratio = `if`(ratio.of.means, 
+                     mean(After.effect) / mean(Asym.recov), 
+                     mean(Ratio))
     )
 
     if (!plot.ratio) {
       p = ggplot() +
 
         geom_point(
-          data = df.animals,
+          data = filter(df.animals, Type == 'Raw'),
           aes(
-            x = Asym.recov * 100,
-            y = After.effect * 100,
+            x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
+            y = `if`(normalized, After.effect.norm * 100, After.effect),
             color = Group,
             shape = Type
           ),
           alpha = 0.5,
         ) +
         geom_line(
-          data = df.animals,
+          data = filter(df.animals, Type == 'Raw'),
           aes(
-            x = Asym.recov * 100,
-            y = After.effect * 100,
+            x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
+            y = `if`(normalized, After.effect.norm * 100, After.effect),
             color = Group,
             group = Animal
           ),
@@ -54,18 +61,16 @@ plot.change <-
         ) +
 
         geom_point(
-          data = df.mean,
+          data = filter(df.mean, Type == 'Raw'),
           aes(
-            x = Asym.recov * 100,
-            y = After.effect * 100,
+            x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
+            y = `if`(normalized, After.effect.norm * 100, After.effect),
             color = Group,
             shape = Type
           ),
           alpha = 1,
           size = 3,
         ) +
-
-
 
         geom_abline(
           intercept = 0,
@@ -82,16 +87,23 @@ plot.change <-
         geom_vline(xintercept = 0,
                    # slope = 1,
                    linetype = "dashed",
-                   alpha = 0.3) +
+                   alpha = 0.3)
 
-        xlim(-50, 200) +
-        ylim(-50, 200) +
+        if (limited) {
+          p = p + xlim(-50, 200) +
+          ylim(-50, 200) 
+          }
 
+        p = p + 
         scale_color_manual(values = get_group_colors(groups)) +
         scale_shape_manual(values = c(Raw = 16, Fit = 17)) +
 
-        theme_classic() + theme(legend.position = "none") +
-        labs(x = "Asymmetry recovered (%)", y = "After effect (%)")
+        theme_classic() + 
+        # theme(legend.position = "none") +
+        labs(x = `if`(normalized, "Asymmetry recovered (%)", "Asymmetry recovered (mm)"), 
+                        y = `if`(normalized, "After effect (%)", "After effect (mm)"))
+        
+        
     } else {
       p = ggplot() +
 
@@ -106,7 +118,7 @@ plot.change <-
                    linetype = "dashed",
                    alpha = 0.3) +
 
-        ylim(-2, 2) +
+        # ylim(-2, 2) +
         scale_color_manual(values = get_group_colors(groups)) +
         scale_fill_manual(values = get_group_colors(groups)) +
         theme_classic() + theme(legend.position = "none")
@@ -131,7 +143,7 @@ make_change_df_animals <- function(data.split,
   }
   for (group in groups) {
     if (is.null(sessions.split.groups[group][[1]])) {
-      sessions.split.groups[group] = c('S1', 'S5')
+      sessions.split.groups[group] = list(c('S1', 'S5'))
     }
   }
   df.animals = data.frame(
@@ -197,7 +209,7 @@ make_change_df_animals <- function(data.split,
           First.session = c(first.session),
           Last.session = c(last.session),
           Type = c(c(Asym = 'Raw', Fit = 'Fit')[type]),
-          Asym.recov = -c(
+          Asym.recov = c(
             (
               filter(
                 data.split,
@@ -212,6 +224,22 @@ make_change_df_animals <- function(data.split,
                     Animal == animal
                 )[type][[1]]
             )
+          ),
+          Asym.recov.norm = - c(
+            (
+              filter(
+                data.split,
+                Session == last.session &
+                  Num == last.num &
+                  Animal == animal
+              )[type][[1]] -
+                filter(
+                  data.split,
+                  Session == first.session &
+                    Num == first.num &
+                    Animal == animal
+                )[type][[1]]
+            )             
             / filter(
               data.split,
               Session == first.session &
@@ -219,7 +247,16 @@ make_change_df_animals <- function(data.split,
                 Animal == animal
             )[type][[1]]
           ),
-          After.effect = -c(
+          After.effect = c(
+            filter(
+              data.washout,
+              Group == group,
+              Session == washout.session &
+                Num == washout.num &
+                Animal == animal
+            )[type][[1]]
+          ),
+          After.effect.norm = - c(
             filter(
               data.washout,
               Group == group,
@@ -269,7 +306,7 @@ make_change_df_animals <- function(data.split,
 
 }
 
-if (name != 'Exp4') {
+{
   ### plot switch group
 
   groups = c(
@@ -291,13 +328,22 @@ if (name != 'Exp4') {
       mega.data.summary,
       model.split,
       model.washout,
-      groups = unique(mega.data$Group),
+      groups = unique(filter(mega.data, !grepl('Exp4', Group))$Group),
       sessions.split = sessions.split,
-      plot.ratio = FALSE
+      # normalized = TRUE,
+      # limited = TRUE,
+      # plot.ratio = TRUE,
+      ratio.of.means = FALSE
     )
   )
-
-  emmeans::contrast()
+  
+  ggsave(
+    plot = plot.change.groups,
+    paste("plots/", "COS_vs_AE_", n <- n+1, ".png", sep = ""),
+    # device = cairo_pdf,
+    width = 8.27,
+    height = 8.27,
+  )
   
 }
 

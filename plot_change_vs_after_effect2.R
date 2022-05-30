@@ -1,5 +1,6 @@
 source("build_mega_model.R")
 source("my_functions.R")
+library("plotrix")
 
 plot.change <-
   function(data.split,
@@ -12,7 +13,9 @@ plot.change <-
            normalized = FALSE,
            limited = FALSE,
            plot.ratio = FALSE,
-           ratio.of.means = FALSE) {
+           ratio.of.means = FALSE,
+           show.legend = TRUE,
+           types = c('Raw', 'Fit')) {
     df.animals = make_change_df_animals(
       data.split,
       data.washout,
@@ -22,24 +25,40 @@ plot.change <-
       groups,
       sessions.split
     )
-
-
+    
+    
     df.mean = summarise(
       group_by(df.animals, Type, Group),
-      Asym.recov = median(Asym.recov),
-      Asym.recov.norm = median(Asym.recov.norm),
-      After.effect = median(After.effect),
-      After.effect.norm = median(After.effect.norm),
-      Ratio = `if`(ratio.of.means, 
-                     mean(After.effect) / mean(Asym.recov), 
-                     mean(Ratio))
+      Asym.recov = mean(Asym.recov),
+      Asym.recov.std.err = std.error(Asym.recov),
+      Asym.recov.norm = mean(Asym.recov.norm),
+      Asym.recov.norm.std.err = std.error(Asym.recov.norm),
+      After.effect = mean(After.effect),
+      After.effect.std.err = std.error(After.effect),
+      After.effect.norm = mean(After.effect.norm),
+      After.effect.norm.std.err = std.error(After.effect.norm),
+      Ratio = `if`(
+        ratio.of.means,
+        mean(After.effect) / mean(Asym.recov),
+        mean(Ratio)
+      )
     )
-
+    
+    df.std.err = summarise(
+      group_by(df.animals, Type, Group),
+      Asym.recov = std.error(Asym.recov),
+      Asym.recov.norm = std.error(Asym.recov.norm),
+      After.effect = std.error(After.effect),
+      After.effect.norm = std.error(After.effect.norm),
+    )
+    
+    df.std.err = filter(df.std.err, Type %in% types)
+    
     if (!plot.ratio) {
       p = ggplot() +
-
+        
         geom_point(
-          data = filter(df.animals, Type == 'Raw'),
+          data = filter(df.animals, Type %in% types),
           aes(
             x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
             y = `if`(normalized, After.effect.norm * 100, After.effect),
@@ -48,20 +67,20 @@ plot.change <-
           ),
           alpha = 0.5,
         ) +
-        geom_line(
-          data = filter(df.animals, Type == 'Raw'),
-          aes(
-            x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
-            y = `if`(normalized, After.effect.norm * 100, After.effect),
-            color = Group,
-            group = Animal
-          ),
-          alpha = 0.5,
-          linetype = 'dotted',
-        ) +
-
+        # geom_line(
+        #   data = filter(df.animals, Type %in% types),
+        #   aes(
+        #     x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
+        #     y = `if`(normalized, After.effect.norm * 100, After.effect),
+        #     color = Group,
+        #     group = Animal
+        #   ),
+        #   alpha = 0.5,
+        #   linetype = 'dotted',
+        # ) +
+        
         geom_point(
-          data = filter(df.mean, Type == 'Raw'),
+          data = filter(df.mean, Type %in% types),
           aes(
             x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
             y = `if`(normalized, After.effect.norm * 100, After.effect),
@@ -71,63 +90,118 @@ plot.change <-
           alpha = 1,
           size = 3,
         ) +
-
+        
+        geom_errorbarh(
+          data = filter(df.mean, Type %in% types),
+          aes(
+            xmin = `if`(
+              normalized,
+              Asym.recov.norm * 100 - 1.96 * 100 * df.std.err$Asym.recov.norm,
+              Asym.recov - 1.96 * df.std.err$Asym.recov
+            ),
+            xmax = `if`(
+              normalized,
+              Asym.recov.norm * 100 + 1.96 * 100 * df.std.err$Asym.recov.norm,
+              Asym.recov + 1.96 * df.std.err$Asym.recov
+            ),
+            y = `if`(normalized, After.effect.norm * 100, After.effect),
+            color = Group,
+            group = Type
+          ),
+          alpha = 1,
+          # size = 1,
+          height = .2,
+          show.legend = FALSE
+        ) +
+        
+        geom_errorbar(
+          data = filter(df.mean, Type %in% types),
+          aes(
+            x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
+            ymin = `if`(
+              normalized,
+              After.effect.norm * 100 - 1.96 * 100 * df.std.err$After.effect.norm,
+              After.effect - 1.96 * df.std.err$After.effect
+            ),
+            ymax = `if`(
+              normalized,
+              After.effect.norm * 100 + 1.96 * 100 * df.std.err$After.effect.norm,
+              After.effect + 1.96 * df.std.err$After.effect
+            ),
+            color = Group,
+            group = Type
+          ),
+          alpha = 1,
+          # size = 1,
+          width = .2,
+          show.legend = FALSE
+        ) +
+        
         geom_abline(
           intercept = 0,
           slope = 1,
           linetype = "dashed",
           alpha = 0.3
         ) +
-
+        
         geom_hline(yintercept = 0,
                    # slope = 1,
                    linetype = "dashed",
                    alpha = 0.3) +
-
+        
         geom_vline(xintercept = 0,
                    # slope = 1,
                    linetype = "dashed",
                    alpha = 0.3)
-
-        if (limited) {
-          p = p + xlim(-50, 200) +
-          ylim(-50, 200) 
-          }
-
-        p = p + 
-        scale_color_manual(values = get_group_colors(groups)) +
-        scale_shape_manual(values = c(Raw = 16, Fit = 17)) +
-
-        theme_classic() + 
-        # theme(legend.position = "none") +
-        labs(x = `if`(normalized, "Asymmetry recovered (%)", "Asymmetry recovered (mm)"), 
-                        y = `if`(normalized, "After effect (%)", "After effect (mm)"))
+      
+      if (limited) {
+        p = p + xlim(-50, 200) +
+          ylim(-50, 200)
+      }
+      
+      p = p +
+        scale_color_manual(values = get_group_colors(groups), labels = get_group_labels(groups)) +
+        scale_shape_manual(values = c(Raw = 17, Fit = 16), guide = "none") +
         
-        
+        theme_classic() +
+        theme(legend.position = `if`(show.legend, "right", "none")) +
+        labs(
+          x = `if`(
+            normalized,
+            "Total recovered symmetry (%)",
+            "Total recovered symmetry (mm)"
+          ),
+          y = `if`(normalized, "Last after effect (%)", "Last after effect (mm)")
+        )
+      
+      
     } else {
       p = ggplot() +
-
+        
         geom_boxplot(data = filter(df.animals, Type == 'Raw'),
                      aes(x = Group, y = Ratio, color = Group)) +
-
-        geom_col(data = filter(df.mean, Type == 'Raw'),
-                   aes(x = Group, y = Ratio, fill = Group), width = 0.5) +
-
+        
+        geom_col(
+          data = filter(df.mean, Type == 'Raw'),
+          aes(x = Group, y = Ratio, fill = Group),
+          width = 0.5
+        ) +
+        
         geom_hline(yintercept = 0,
                    # slope = 1,
                    linetype = "dashed",
                    alpha = 0.3) +
-
+        
         # ylim(-2, 2) +
         scale_color_manual(values = get_group_colors(groups)) +
         scale_fill_manual(values = get_group_colors(groups)) +
         theme_classic() + theme(legend.position = "none")
     }
-
-
-
-
-
+    
+    
+    
+    
+    
     return(p)
   }
 
@@ -157,33 +231,33 @@ make_change_df_animals <- function(data.split,
     Ratio = c()
   )
   for (group in groups) {
-    sessions.split = sessions.split.groups[group]
-
+    sessions.split = sessions.split.groups[group][[1]]
+    
     sessions.test = sessions.split
     if (length(sessions.split)  == 1) {
       sessions.split = c(sessions.split[[1]], sessions.split[[1]])
     }
     data.summary2 = filter(data.summary, Group == group)
-
+    
     first.trial = min(filter(data.summary2, Phase == 'Split',
                              Session == sessions.split[[1]])$Trial)
     last.trial = max(filter(data.summary2, Phase == 'Split',
                             Session == sessions.split[[2]])$Trial)
     washout.trial = last.trial + 1
-
+    
     first.trial.row = filter(data.summary2, Trial == first.trial)
     last.trial.row = filter(data.summary2, Trial == last.trial)
     washout.row = filter(data.summary2, Trial == washout.trial)
-
+    
     first.num = first.trial.row$Num
     first.session = first.trial.row$Session
-
+    
     last.num = last.trial.row$Num
     last.session = last.trial.row$Session
-
+    
     washout.num = washout.row$Num
     washout.session = washout.row$Session
-
+    
     animal_lists = list(
       filter(
         data.split,
@@ -198,9 +272,9 @@ make_change_df_animals <- function(data.split,
              Group == group,
              Session == washout.session)$Animal
     )
-
+    
     animals = Reduce(intersect, animal_lists)
-
+    
     for (type in c('Asym', 'Fit')) {
       for (animal in animals) {
         df.aux = data.frame(
@@ -209,7 +283,21 @@ make_change_df_animals <- function(data.split,
           First.session = c(first.session),
           Last.session = c(last.session),
           Type = c(c(Asym = 'Raw', Fit = 'Fit')[type]),
-          Asym.recov = c(
+          Asym.recov = c((
+            filter(
+              data.split,
+              Session == last.session &
+                Num == last.num &
+                Animal == animal
+            )[type][[1]] -
+              filter(
+                data.split,
+                Session == first.session &
+                  Num == first.num &
+                  Animal == animal
+              )[type][[1]]
+          )),
+          Asym.recov.norm = -c(
             (
               filter(
                 data.split,
@@ -224,22 +312,6 @@ make_change_df_animals <- function(data.split,
                     Animal == animal
                 )[type][[1]]
             )
-          ),
-          Asym.recov.norm = - c(
-            (
-              filter(
-                data.split,
-                Session == last.session &
-                  Num == last.num &
-                  Animal == animal
-              )[type][[1]] -
-                filter(
-                  data.split,
-                  Session == first.session &
-                    Num == first.num &
-                    Animal == animal
-                )[type][[1]]
-            )             
             / filter(
               data.split,
               Session == first.session &
@@ -256,7 +328,7 @@ make_change_df_animals <- function(data.split,
                 Animal == animal
             )[type][[1]]
           ),
-          After.effect.norm = - c(
+          After.effect.norm = -c(
             filter(
               data.washout,
               Group == group,
@@ -300,50 +372,87 @@ make_change_df_animals <- function(data.split,
       }
     }
   }
-
-
+  
+  
   return(df.animals)
-
+  
 }
 
-{
-  ### plot switch group
-
-  groups = c(
-    paste(name, 'NotAtaxic:NoSwitch', sep = ':'),
-    paste(name, 'NotAtaxic:Switch', sep = ':')
-  )
-
-
-  if (name == 'Exp3') {
-    sessions.split = setNames(list(c('S1', 'S4'), c('S1', 'S5')), groups)
-  } else if (name == 'Exp5') {
-    sessions.split = setNames(list(c('S1', 'S5'), c('S1', 'S5')), groups)
-  }
-
+if (name == 'Exp3') {
+  groups = c('Exp3:NotAtaxic:NoSwitch', 'Exp3:NotAtaxic:Switch')
+  
+  sessions.split = setNames(list(c('S1', 'S4'), c('S1', 'S5')), groups)
+  
   (
-    plot.change.groups = plot.change(
+    plot.change = plot.change(
       mega.data.split,
       mega.data.washout,
       mega.data.summary,
       model.split,
       model.washout,
-      groups = unique(filter(mega.data, !grepl('Exp4', Group))$Group),
+      groups = groups,
       sessions.split = sessions.split,
       # normalized = TRUE,
       # limited = TRUE,
       # plot.ratio = TRUE,
+      types = c('Fit'),
       ratio.of.means = FALSE
     )
   )
   
-  ggsave(
-    plot = plot.change.groups,
-    paste("plots/", "COS_vs_AE_", n <- n+1, ".png", sep = ""),
-    # device = cairo_pdf,
-    width = 8.27,
-    height = 8.27,
+}
+
+
+if (name == 'Exp5') {
+  groups = c('Exp3:NotAtaxic:NoSwitch',
+             'Exp3:NotAtaxic:Switch',
+             'Exp5:NotAtaxic:NoSwitch',
+             'Exp5:NotAtaxic:Switch')
+  
+  sessions.split = setNames(list(c('S1', 'S4'), c('S1', 'S5'), c('S1', 'S5'), c('S1', 'S5')), groups)
+  
+  (
+    plot.change = plot.change(
+      mega.data.split,
+      mega.data.washout,
+      mega.data.summary,
+      model.split,
+      model.washout,
+      groups = groups,
+      sessions.split = sessions.split,
+      # normalized = TRUE,
+      # limited = TRUE,
+      # plot.ratio = TRUE,
+      types = c('Fit'),
+      ratio.of.means = FALSE
+    )
   )
   
 }
 
+if (name == 'Exp4') {
+  groups = c('Exp3:NotAtaxic:NoSwitch',
+             'Exp3:NotAtaxic:Switch',
+             'Exp4:NotAtaxic:Switch',
+             'Exp4:Ataxic:Switch')
+  
+  sessions.split = setNames(list(c('S1', 'S4'), c('S1', 'S5'), c('S1', 'S2'), c('S1', 'S2')), groups)
+  
+  (
+    plot.change = plot.change(
+      mega.data.split,
+      mega.data.washout,
+      mega.data.summary,
+      model.split,
+      model.washout,
+      groups = groups,
+      sessions.split = sessions.split,
+      # normalized = TRUE,
+      # limited = TRUE,
+      # plot.ratio = TRUE,
+      types = c('Fit'),
+      ratio.of.means = FALSE
+    )
+  )
+  
+}

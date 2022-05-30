@@ -1,19 +1,21 @@
-source("build_mega_model.R")
+source("build_model_first_lr.R")
 source("my_functions.R")
 
 
-learning.rate.values = summary(emtrends(
-  model.split,
-  ~ Session * Group,
-  var = 'Num',
-  adjust = 'none'
-),
-infer = TRUE)
+(first.lr.values = summary(
+  emtrends(
+    model.first.lr,
+    ~ Session * Group,
+    var = 'Perc',
+    adjust = 'none'
+  ),
+  infer = TRUE
+))
 
-plot.learning.rates <- function(values,
-                                groups,
-                                xlim = c('S1', 'S2', 'S3', 'S4', 'S5'),
-                                draw.lines = FALSE) {
+plot.first.lr <- function(values,
+                          groups,
+                          xlim = c('S1', 'S2', 'S3', 'S4', 'S5'),
+                          draw.lines = FALSE) {
   p = ggplot()
   
   if (draw.lines) {
@@ -22,7 +24,7 @@ plot.learning.rates <- function(values,
         data = filter(values, Group %in% groups),
         aes(
           x = Session,
-          y = Num.trend,
+          y = Perc.trend / 6,
           group = Group,
           color = Group
         ),
@@ -37,7 +39,7 @@ plot.learning.rates <- function(values,
       data = filter(values, Group %in% groups),
       aes(
         x = Session,
-        y = Num.trend,
+        y = Perc.trend / 6,
         group = Group,
         color = Group
       ),
@@ -49,9 +51,9 @@ plot.learning.rates <- function(values,
       data = filter(values, Group %in% groups),
       aes(
         x = Session,
-        y = Num.trend,
-        ymin = lower.CL,
-        ymax = upper.CL,
+        y = Perc.trend / 6,
+        ymin = lower.CL / 6,
+        ymax = upper.CL / 6,
         group = Group,
         color = Group,
       ),
@@ -66,7 +68,7 @@ plot.learning.rates <- function(values,
     theme_classic() + theme(legend.position = "none") +
     scale_fill_manual(values = get_group_colors(groups)) +
     scale_color_manual(values = get_group_colors(groups)) +
-    labs(x = "Session", y = "Session learning rate (mm/trial)")
+    labs(x = "Session", y = "1st trial learning rate (mm/s)")
   
   return(p)
 }
@@ -74,8 +76,8 @@ plot.learning.rates <- function(values,
 if (name == 'Exp3') {
   groups = c('Exp3:NotAtaxic:NoSwitch', 'Exp3:NotAtaxic:Switch')
   
-  (plot.learning.rate = plot.learning.rates(learning.rate.values,
-                                            groups = groups))
+  (plot.first.lr = plot.first.lr(first.lr.values,
+                                 groups = groups))
 }
 
 if (name == 'Exp5') {
@@ -83,8 +85,8 @@ if (name == 'Exp5') {
              'Exp5:NotAtaxic:NoSwitch',
              'Exp5:NotAtaxic:Switch')
   
-  (plot.learning.rate = plot.learning.rates(learning.rate.values,
-                                            groups = groups))
+  (plot.first.lr = plot.first.lr(first.lr.values,
+                                 groups = groups))
 }
 
 if (name == 'Exp4') {
@@ -92,6 +94,9 @@ if (name == 'Exp4') {
              'Exp4:NotAtaxic:Switch',
              'Exp4:Ataxic:Switch')
   
-  (plot.learning.rate = plot.learning.rates(learning.rate.values,
-                                            groups = groups))
+  (plot.first.lr = plot.first.lr(
+    first.lr.values,
+    groups = groups,
+    xlim = c('S1', 'S2', 'S3', 'S5')
+  ))
 }

@@ -19,12 +19,12 @@ source("my_functions.R")
 
 if (!exists("is.built") || !is.built) {
   mega.data = data.frame()
-  for (name in c('Exp3', 'Exp5', 'Exp4')) {
-    if (name != 'Exp3') {
+  for (name.aux in c('Exp3', 'Exp5', 'Exp4')) {
+    if (name.aux != 'Exp3') {
       data_frame <- read.csv(
         file = paste(
           './data/',
-          name,
+          name.aux,
           '_df.csv',
           sep = "",
           collapse = NULL
@@ -41,7 +41,7 @@ if (!exists("is.built") || !is.built) {
                              read.csv(
                                file = paste(
                                  './data/',
-                                 name,
+                                 name.aux,
                                  group,
                                  '_df.csv',
                                  sep = "",
@@ -55,7 +55,7 @@ if (!exists("is.built") || !is.built) {
     }
     
     # data_frame$Group = relevel(data_frame$Phenotype, ref=3)
-    # if (name != 'Exp4') {
+    # if (name.aux != 'Exp4') {
     #   data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:NoSwitch')
     # } else {
     #   data_frame$Group = relevel(data_frame$Group, 'NotAtaxic:Switch')
@@ -63,7 +63,7 @@ if (!exists("is.built") || !is.built) {
     data_frame <- data_frame[!is.na(data_frame$Asym), ]
     data_frame = filter(data_frame, Phenotype != 'HalfAtaxic')
     data_frame = filter(data_frame, Animal != 'NoSwitch03')
-    data_frame = cbind(Experiment = rep(name, nrow(data_frame)),
+    data_frame = cbind(Experiment = rep(name.aux, nrow(data_frame)),
                        data_frame,
                        stringsAsFactors = TRUE)
     data_frame <-

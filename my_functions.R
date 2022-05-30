@@ -148,7 +148,8 @@ summarise.predict <- function(data, model, ...) {
         Num = unique(newdata$Num),
         Session = unique(newdata$Session),
         Group = unique(newdata$Group)
-      )
+      ),
+      adjust = 'none'
     ), infer = TRUE)
   },
   error = function(cond) {
@@ -158,7 +159,8 @@ summarise.predict <- function(data, model, ...) {
                       Num = unique(newdata$Num),
                       Session = unique(newdata$Session)
                       # Group = unique(newdata$Group)
-                    )), infer = TRUE)
+                    ),
+                    adjust = 'none'), infer = TRUE)
   })
   
   
@@ -175,6 +177,63 @@ summarise.predict <- function(data, model, ...) {
     } else {
       predict = filter(predict.big,
                        Num == num,
+                       Session == session, )[1,]
+    }
+    
+    predict.aux = data.frame(
+      Fit = c(predict$emmean),
+      Lower = c(predict$lower.CL),
+      Upper = c(predict$upper.CL),
+      P.value = c(predict$p.value)
+    )
+    auxdata = rbind(auxdata, predict.aux)
+  }
+  newdata <- cbind(newdata, auxdata)
+  return(newdata)
+}
+
+
+summarise.predict.first.lr <- function(data, model, ...) {
+  newdata = summarise.factors(data, Perc, Session, Group, ...)
+  auxdata = data.frame()
+  
+  predict.big = tryCatch({
+    summary(emmeans(
+      model,
+      ~ Perc * Session * Group,
+      at = list(
+        Perc = unique(newdata$Perc),
+        Session = unique(newdata$Session),
+        Group = unique(newdata$Group)
+      ),
+      adjust = 'none'
+    ), infer = TRUE)
+  },
+  error = function(cond) {
+    summary(emmeans(model,
+                    ~ Perc * Session,
+                    at = list(
+                      Perc = unique(newdata$Perc),
+                      Session = unique(newdata$Session)
+                      # Group = unique(newdata$Group)
+                    ),
+                    adjust = 'none'), infer = TRUE)
+  })
+  
+  
+  for (i in 1:nrow(newdata)) {
+    row = newdata[i,]
+    num = row$Perc
+    session = row$Session
+    group = row$Group
+    if ('Group' %in% names(predict)) {
+      predict = filter(predict.big,
+                       Perc == num,
+                       Session == session,
+                       Group == group)[1,]
+    } else {
+      predict = filter(predict.big,
+                       Perc == num,
                        Session == session, )[1,]
     }
     
@@ -230,7 +289,7 @@ get_group_color <- function(group) {
       return('tan2')
     }
     else if (name == 'Exp5') {
-      return('tomato2')
+      return('sienna1')
     } else {
       return('lightsalmon2')
     }
@@ -320,7 +379,9 @@ get_group_colors = function(groups) {
 
 skipcomp.emmc <- function(levels,
                            skip = 1,
-                           reverse = FALSE, ...) {
+                           reverse = FALSE,
+                           # adjust = TRUE,
+                            ...) {
   if ((k <- length(levels)) < skip + 1)
     stop("Need at least ", skip + 1, " levels")
   coef <- data.frame()
@@ -330,7 +391,7 @@ skipcomp.emmc <- function(levels,
   }))
   names(coef) <- sapply(coef, function(x)
     paste(levels[[which(x == 1)]], "-", levels[[which(x == -1)]]))
-  attr(coef, "adjust") = "fdr"   # default adjustment method
+  attr(coef, "adjust") =  "fdr" # default adjustment method or none
   coef
 }
 
@@ -394,3 +455,42 @@ is.integer0 <- function(x)
 {
   is.integer(x) && length(x) == 0L
 }
+
+
+get_group_label = function(group) {
+  if (length(group) > 1) {
+    return (cbind(get_group_color(group[[1]]), get_group_color(group[2:length(group)])))
+  }
+  group.parts = str_split(group, ":")[[1]]
+  if (grepl('Exp', group.parts[[1]])) {
+    name = group.parts[[1]]
+    group = paste(group.parts[[2]], group.parts[[3]], sep = ':')
+  }
+  if (group == 'NotAtaxic:NoSwitch') {
+    if (name  == 'Exp3') {
+      return('Continuous 1')
+    } else {
+      return('Continuous 2')
+    }
+  } else if (group == 'NotAtaxic:Switch') {
+    if (name == 'Exp3') {
+      return('Alternating 1')
+    }
+    else if (name == 'Exp5') {
+      return('Alternating 2')
+    } else {
+      return('Control')
+    }
+  } else if (group == 'Ataxic:Switch') {
+    return('Ataxic')
+  }
+}
+
+get_group_labels = function(groups) {
+  res = c()
+  for (group in groups) {
+    res[group] = get_group_label(group)
+  }
+  return(res)
+}
+

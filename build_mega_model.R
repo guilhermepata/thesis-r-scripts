@@ -17,24 +17,6 @@ library(tidyverse)
 library(MuMIn)
 source("my_functions.R")
 
-# models = list()
-# data.summaries = list()
-# data.totals = list()
-# for (name in c('Exp3', 'Exp5', 'Exp4')) {
-#   source('build_model.R')
-#   models[name] = list(list(
-#     model.baseline,
-#     model.split,
-#     model.intersplit,
-#     model.washout
-#   ))
-#   data.summaries[name] = list(data.summary)
-#   data.totals[name] = list(data.total_frame)
-#   rm(list = setdiff(ls(), c(
-#     "data.totals", "data.summaries", "models"
-#   )))
-# }
-
 if (!exists("is.built") || !is.built) {
   mega.data = data.frame()
   for (name in c('Exp3', 'Exp5', 'Exp4')) {
@@ -90,6 +72,12 @@ if (!exists("is.built") || !is.built) {
     mega.data = rbind(mega.data, data_frame)
     rm(list = c("data_frame"))
   }
+  
+  mega.data$Group = relevel(mega.data$Group, 'Exp4:NotAtaxic:Switch')
+  mega.data$Group = relevel(mega.data$Group, 'Exp5:NotAtaxic:Switch')
+  mega.data$Group = relevel(mega.data$Group, 'Exp5:NotAtaxic:NoSwitch')
+  mega.data$Group = relevel(mega.data$Group, 'Exp3:NotAtaxic:Switch')
+  mega.data$Group = relevel(mega.data$Group, 'Exp3:NotAtaxic:NoSwitch')
   
   mega.data.split <- mega.data[mega.data$Phase == "Split",]
   mega.data.intersplit <-

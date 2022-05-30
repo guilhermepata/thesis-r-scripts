@@ -318,7 +318,7 @@ get_group_colors = function(groups) {
   return(res)
 }
 
-skip_comp.emmc <- function(levels,
+skipcomp.emmc <- function(levels,
                            skip = 1,
                            reverse = FALSE, ...) {
   if ((k <- length(levels)) < skip + 1)
@@ -329,10 +329,43 @@ skip_comp.emmc <- function(levels,
     sgn * c(rep(0, i - 1), 1, rep(0, skip),-1, rep(0, k - i - skip - 1))
   }))
   names(coef) <- sapply(coef, function(x)
-    paste(which(x == 1), "-", which(x == -1)))
+    paste(levels[[which(x == 1)]], "-", levels[[which(x == -1)]]))
   attr(coef, "adjust") = "fdr"   # default adjustment method
   coef
 }
+
+skipconsecavg.emmc <- function(levels, exclude = integer(0), reverse = FALSE, ...) {
+  reverse = !reverse
+  if (!is.integer0(exclude)) {
+    levels = levels[-exclude]
+  }
+  if ((k <- length(levels)) < 1 + 1)
+    stop("Need at least ", 1, " levels")
+  coef.aux <- data.frame()
+  coef.aux <- as.data.frame(lapply(seq_len(k - 1), function(i) {
+    sgn <- ifelse(reverse,-1, 1)
+    sgn * c(rep(0, i - 1), 1,-1, rep(0, k - i - 1))
+  }))
+  # coef = data.frame()
+  names(coef.aux) <- sapply(coef.aux, function(x)
+    paste(levels[[which(x == 1)]], "-", levels[[which(x == -1)]]))
+  
+  select = seq(from = 2, to = length(levels)-1, by = 2)
+  
+  k = length(select)+1
+  
+  coef.aux = coef.aux[,select]
+  
+  coef = data.frame(Avg = rowSums(coef.aux, na.rm=TRUE) / (k-1))
+  
+  names(coef) <- sapply(coef, function(x)
+    paste("(", paste(levels[which(x == 1/(k-1))], sep = '', collapse = ' + '), " - ", paste(levels[which(x == -1/(k-1))], sep = '', collapse = ' - '), ") / ", toString(k-1), sep = ""))
+  coef = cbind(coef, coef.aux)
+  attr(coef, "adjust") = "fdr"   # default adjustment method
+  coef
+}
+
+
 
 revconsecavg.emmc <- function(levels, exclude = integer(0), reverse = FALSE, ...) {
   reverse = !reverse
@@ -349,9 +382,9 @@ revconsecavg.emmc <- function(levels, exclude = integer(0), reverse = FALSE, ...
   # coef = data.frame()
   coef = data.frame(Avg = rowSums(coef.aux, na.rm=TRUE) / (k-1))
   names(coef.aux) <- sapply(coef.aux, function(x)
-    paste(which(x == 1), "-", which(x == -1)))
+    paste(levels[[which(x == 1)]], "-", levels[[which(x == -1)]]))
   names(coef) <- sapply(coef, function(x)
-    paste("(", which(x == 1/(k-1)), " - ", which(x == -1/(k-1)), ") / ", toString(k-1), sep = ""))
+    paste("(", levels[[which(x == 1/(k-1))]], " - ", levels[[which(x == -1/(k-1))]], ") / ", toString(k-1), sep = ""))
   coef = cbind(coef, coef.aux)
   attr(coef, "adjust") = "fdr"   # default adjustment method
   coef

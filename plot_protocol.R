@@ -1,17 +1,17 @@
 source('build_mega_model.R')
 
-
 plot.protocol <- function(data.summary,
                           group,
                           sessions = NULL,
                           legend = TRUE,
                           pos = NULL) {
+  legend = !legend
   if (is.null(sessions)) {
     sessions = unique(data.summary$Session)
   }
   if (legend) {
     if (is.null(pos)){
-    pos = c(0.93, 0.9)
+    pos = "top"
     }
   } else {
     pos = "null"
@@ -185,7 +185,9 @@ plot.protocol <- function(data.summary,
     theme(
       legend.position = pos,
       legend.background = element_rect(fill = 'transparent', color = 'transparent'),
-      legend.box.background = element_rect(fill = 'transparent', color = 'transparent')
+      legend.box.background = element_rect(fill = 'transparent', color = 'transparent'),
+      legend.margin=margin(t = 0, unit='cm'),
+      legend.text = element_text(size = 6)
     ) +
     # facet_wrap(~ Session) +
     labs(x = 'Trials', y = "Belt speeds (mm)")
@@ -219,7 +221,10 @@ short.df = data.frame(Group = rep('Exp3:NotAtaxic:NoSwitch', 21),
 (plot.exp5.switch.protocol = plot.protocol(mega.data.summary,
                                            'Exp5:NotAtaxic:Switch',
                                            legend = FALSE))
-(plot.exp4.protocol = plot.protocol(mega.data.summary,
+(plot.exp4.control.protocol = plot.protocol(mega.data.summary,
                                            'Exp4:NotAtaxic:Switch',
                                            legend = FALSE))
 
+(plot.exp4.ataxic.protocol = plot.protocol(mega.data.summary,
+                                           'Exp4:Ataxic:Switch',
+                                           legend = FALSE))

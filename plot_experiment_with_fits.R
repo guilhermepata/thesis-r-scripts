@@ -9,8 +9,8 @@ plot.experiment <-
   function(data,
            data.summary,
            color = '#619CFF',
-           show.animals = FALSE,
-           show.fit = TRUE,
+           show.animals = TRUE,
+           show.fit = FALSE,
            separate.phases = TRUE) {
     
     

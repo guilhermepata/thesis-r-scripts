@@ -23,7 +23,7 @@ plot.initial.error <- function(data.split,
         group = Group,
         color = Group
       ),
-      size = 3,
+      size = 2,
       position = position_dodge(0.5)
     ) +
     geom_errorbar(

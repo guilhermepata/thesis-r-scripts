@@ -39,8 +39,8 @@ plot.experiment <-
     )
     shades.frame = continuous.shades.frame(shades.frame)
     
-    color.dark <- darken(color)
-    color.light <- lighten(color)
+    color.dark <- `if`(dark, lighten(color), darken(color))
+    color.light <- `if`(dark, darken(color), lighten(color))
     
     p <- ggplot(data, aes(x = Trial)) +
       

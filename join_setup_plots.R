@@ -19,22 +19,22 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
     img_tracking <-  image_read("./plots/tracking.png")
     
     setup = ggdraw() + theme(
-      plot.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = `if`(dark, "black", "white"), color = NA),
       plot.margin = unit(c(0, 0, 0, .7), "cm")
     ) +
       draw_image(img_setup)
     swl = ggdraw() + theme(
-      plot.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = `if`(dark, "black", "white"), color = NA),
       plot.margin = unit(c(0, 0, 0, .7), "cm")
     ) +
       draw_image(img_swl)
     sl = ggdraw() + theme(
-      plot.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = `if`(dark, "black", "white"), color = NA),
       plot.margin = unit(c(0, 0, 0, .7), "cm")
     ) +
       draw_image(img_sl)
     tracking = ggdraw() + theme(
-      plot.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = `if`(dark, "black", "white"), color = NA),
       plot.margin = unit(c(0, 0, 0, .7), "cm")
     ) +
       draw_image(img_tracking)
@@ -142,6 +142,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
       plotlist = plotlist,
       ncol = 2,
       labels = 'AUTO',
+      label_colour = `if`(dark, "white", "black"),
       rel_heights = c(2.65,2),
       align = "Vh"
     )
@@ -165,22 +166,22 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
     img_ablation <-  image_read("./plots/ablation.svg")
     
     control = ggdraw() + theme(
-      plot.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = `if`(dark, "black", "white"), color = NA),
       plot.margin = unit(c(0, 0, 0.25, .7), "cm")
     ) +
       draw_image(img_control)
     ataxic = ggdraw() + theme(
-      plot.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = `if`(dark, "black", "white"), color = NA),
       plot.margin = unit(c(0, 0, 0.25, .7), "cm")
     ) +
       draw_image(img_ataxic)
     injection = ggdraw() + theme(
-      plot.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = `if`(dark, "black", "white"), color = NA),
       plot.margin = unit(c(0, 0, 0, .7), "cm")
     ) +
       draw_image(img_injection)
     ablation = ggdraw() + theme(
-      plot.background = element_rect(fill = "white", color = NA),
+      plot.background = element_rect(fill = `if`(dark, "black", "white"), color = NA),
       plot.margin = unit(c(0, 0, 0.25, .7), "cm")
     ) +
       draw_image(img_ablation)
@@ -222,6 +223,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
       plotlist = toplist,
       nrow = 1,
       labels = 'AUTO',
+      label_colour = `if`(dark, "white", "black"),
       align = "Vh",
       rel_widths = c(2, 1, 1, 1)
     )
@@ -232,6 +234,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
       plotlist = plotlist,
       ncol = 2,
       labels = c('E', 'F', 'G', 'H'),
+      label_colour = `if`(dark, "white", "black"),
       rel_heights = c(2.65,2),
       align = "Vh"
     )
@@ -246,11 +249,29 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
     
   }
   
-  ggsave(
-    plot = p,
-    paste("plots/", name, "_setup_plot", ".pdf", sep = ""),
-    device = cairo_pdf,
-    width = 8.27,
-    height = height
-  )
+  # ggsave(
+  #   plot = p,
+  #   paste("plots/", name, "_setup_plot", ".pdf", sep = ""),
+  #   device = cairo_pdf,
+  #   width = 8.27,
+  #   height = height
+  # )
+  
+  if (dark) {
+    ggsave(
+      plot = p,
+      paste("presentation_plots/", name, "_setup_plot", ".png", sep = ""),
+      bg = "black",
+      width = 8.27,
+      height = height
+    )
+  } else {
+    ggsave(
+      plot = p,
+      paste("plots/", name, "_setup_plot", ".pdf", sep = ""),
+      device = cairo_pdf,
+      width = 8.27,
+      height = height
+    )
+  }
 }

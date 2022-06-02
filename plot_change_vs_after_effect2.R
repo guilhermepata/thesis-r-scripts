@@ -44,6 +44,14 @@ plot.change <-
       )
     )
     
+      df.fit = make_change_df(
+        data.summary,
+        model.split,
+        model.washout,
+        groups,
+        sessions.split
+      )
+    
     df.std.err = summarise(
       group_by(df.animals, Type, Group),
       Asym.recov = std.error(Asym.recov),
@@ -78,58 +86,41 @@ plot.change <-
         #   alpha = 0.5,
         #   linetype = 'dotted',
         # ) +
-        
-        geom_point(
-          data = filter(df.mean, Type %in% types),
-          aes(
-            x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
-            y = `if`(normalized, After.effect.norm * 100, After.effect),
-            color = Group,
-            shape = Type
-          ),
-          alpha = 1,
-          size = 3,
-        ) +
+      
+      geom_point(
+        data = df.fit,
+        aes(
+          x = COS.Fit,
+          y = AE.Fit,
+          color = Group
+          # shape = Type
+        ),
+        shape = 16,
+        alpha = 1,
+        size = 3,
+      ) +
         
         geom_errorbarh(
-          data = filter(df.mean, Type %in% types),
+          data = df.fit,
           aes(
-            xmin = `if`(
-              normalized,
-              Asym.recov.norm * 100 - 1.96 * 100 * df.std.err$Asym.recov.norm,
-              Asym.recov - 1.96 * df.std.err$Asym.recov
-            ),
-            xmax = `if`(
-              normalized,
-              Asym.recov.norm * 100 + 1.96 * 100 * df.std.err$Asym.recov.norm,
-              Asym.recov + 1.96 * df.std.err$Asym.recov
-            ),
-            y = `if`(normalized, After.effect.norm * 100, After.effect),
-            color = Group,
-            group = Type
+            xmin = COS.Lower,
+            xmax = COS.Upper,
+            y = AE.Fit,
+            color = Group
           ),
           alpha = 1,
           # size = 1,
           height = .2,
           show.legend = FALSE
         ) +
-        
+
         geom_errorbar(
-          data = filter(df.mean, Type %in% types),
+          data = df.fit,
           aes(
-            x = `if`(normalized, Asym.recov.norm * 100, Asym.recov),
-            ymin = `if`(
-              normalized,
-              After.effect.norm * 100 - 1.96 * 100 * df.std.err$After.effect.norm,
-              After.effect - 1.96 * df.std.err$After.effect
-            ),
-            ymax = `if`(
-              normalized,
-              After.effect.norm * 100 + 1.96 * 100 * df.std.err$After.effect.norm,
-              After.effect + 1.96 * df.std.err$After.effect
-            ),
-            color = Group,
-            group = Type
+            x = COS.Fit,
+            ymin = AE.Lower,
+            ymax = AE.Upper,
+            color = Group
           ),
           alpha = 1,
           # size = 1,
@@ -204,6 +195,113 @@ plot.change <-
     
     return(p)
   }
+
+make_change_df <- function(data.summary,
+                           model.split,
+                           model.washout,
+                           groups,
+                           sessions.split.groups = NULL) {
+  if (is.null(sessions.split.groups)) {
+    sessions.split.groups = list()
+  }
+  for (group in groups) {
+    if (is.null(sessions.split.groups[group][[1]])) {
+      sessions.split.groups[group] = list(c('S1', 'S5'))
+    }
+  }
+  df = data.frame()
+  for (group in groups) {
+    sessions.split = sessions.split.groups[group][[1]]
+    sessions.test = sessions.split
+    if (length(sessions.split) == 1) {
+      sessions.split = c(sessions.split[[1]], sessions.split[[1]])
+    }
+    
+    data.summary2 = filter(data.summary, Group == group)
+    
+    first.trial = min(filter(data.summary2, Phase == 'Split',
+                             Session == sessions.split[[1]])$Trial)
+    last.trial = max(filter(data.summary2, Phase == 'Split',
+                            Session == sessions.split[[2]])$Trial)
+    washout.trial = last.trial + 1
+    
+    first.trial.row = filter(data.summary2, Trial == first.trial)
+    last.trial.row = filter(data.summary2, Trial == last.trial)
+    washout.row = filter(data.summary2, Trial == washout.trial)
+    
+    first.num = first.trial.row$Num
+    first.session = first.trial.row$Session
+    
+    last.num = last.trial.row$Num
+    last.session = last.trial.row$Session
+    
+    washout.num = washout.row$Num
+    washout.session = washout.row$Session
+    
+    # if (length(sessions.split) == 1) {
+    #   sessions =
+    # }
+    
+    s.split = summary(
+      emmeans(
+        model.split,
+        revpairwise ~ Num * Session * Group,
+        at = list(
+          Session = sessions.test,
+          Num = c(first.num, last.num),
+          Group = group
+        ),
+        adjust = "none"
+      )$contrasts,
+      infer = TRUE
+    )
+    
+    s.split = filter(
+      s.split,
+      contrast == paste(
+        last.num,
+        last.session,
+        group,
+        '-',
+        first.num,
+        first.session,
+        group,
+        sep = ' '
+      )
+    )
+    
+    s.washout = summary(
+      emmeans(
+        model.washout,
+        identity ~ Num * Session * Group,
+        at = list(
+          Session = washout.session,
+          Num = washout.num,
+          Group = group
+        ),
+        adjust = "none"
+      )$contrasts,
+      infer = TRUE
+    )
+    
+    df.aux <- data.frame(
+      Group = c(group),
+      COS.Fit = c(s.split$estimate),
+      COS.Lower = c(s.split$lower.CL),
+      COS.Upper = c(s.split$upper.CL),
+      COS.P.value = c(s.split$p.value),
+      AE.Fit = c(s.washout$estimate),
+      AE.Lower = c(s.washout$lower.CL),
+      AE.Upper = c(s.washout$upper.CL),
+      AE.P.value = c(s.washout$p.value)
+    )
+    
+    df = rbind(df, df.aux)
+  }
+  
+  return(df)
+  
+}
 
 make_change_df_animals <- function(data.split,
                                    data.washout,
@@ -404,10 +502,12 @@ if (name == 'Exp3') {
 
 
 if (name == 'Exp5') {
-  groups = c('Exp3:NotAtaxic:NoSwitch',
-             'Exp3:NotAtaxic:Switch',
-             'Exp5:NotAtaxic:NoSwitch',
-             'Exp5:NotAtaxic:Switch')
+  groups = c(
+    'Exp3:NotAtaxic:NoSwitch',
+    'Exp3:NotAtaxic:Switch',
+    'Exp5:NotAtaxic:NoSwitch',
+    'Exp5:NotAtaxic:Switch'
+  )
   
   sessions.split = setNames(list(c('S1', 'S4'), c('S1', 'S5'), c('S1', 'S5'), c('S1', 'S5')), groups)
   
@@ -431,10 +531,12 @@ if (name == 'Exp5') {
 }
 
 if (name == 'Exp4') {
-  groups = c('Exp3:NotAtaxic:NoSwitch',
-             'Exp3:NotAtaxic:Switch',
-             'Exp4:NotAtaxic:Switch',
-             'Exp4:Ataxic:Switch')
+  groups = c(
+    'Exp3:NotAtaxic:NoSwitch',
+    'Exp3:NotAtaxic:Switch',
+    'Exp4:NotAtaxic:Switch',
+    'Exp4:Ataxic:Switch'
+  )
   
   sessions.split = setNames(list(c('S1', 'S4'), c('S1', 'S5'), c('S1', 'S2'), c('S1', 'S2')), groups)
   

@@ -118,7 +118,7 @@ plot.retention <- function(data.split.summary,
     theme_classic() + theme(legend.position = "none") +
     scale_fill_manual(values = get_group_colors(groups)) +
     scale_color_manual(values = get_group_colors(groups)) +
-    labs(x = "Session", y = "Inter-section error reduction (mm)")
+    labs(x = "Session", y = "Inter-session error reduction (mm)")
   
   return(p)
 }

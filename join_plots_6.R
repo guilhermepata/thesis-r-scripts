@@ -67,7 +67,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
     plotlist = list(aligned[[2]], plotlist[[4]], plotlist[[5]], plotlist[[6]]),
     nrow = 1,
     # align = "vh",
-    labels = c('D', 'E', 'F', 'G')
+    labels = c('C', 'D', 'E', 'F')
   )
   
   (p = cowplot::plot_grid(

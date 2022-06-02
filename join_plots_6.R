@@ -60,6 +60,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
     nrow = 1,
     # align = "vh",
     labels = c('A', 'B', ''),
+    label_colour = `if`(dark, "white", "black"),
     rel_widths = c(1.65, 1.65, .65)
   ) 
   # + theme(plot.background = element_rect(fill = `if`(dark,"transparent","white"), color = "transparent"))
@@ -67,6 +68,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
     plotlist = list(aligned[[2]], plotlist[[4]], plotlist[[5]], plotlist[[6]]),
     nrow = 1,
     # align = "vh",
+    label_colour = `if`(dark, "white", "black"),
     labels = c('C', 'D', 'E', 'F')
   )
   

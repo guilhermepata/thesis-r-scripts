@@ -201,7 +201,7 @@ plot.protocol <- function(data.summary,
       breaks = c(slow.speed, tied.speed, fast.speed),
       expand = expansion(mult = 0.25)
     ) +
-    theme_classic() +
+    `if`(dark, theme_black(), theme_classic()) +
     scale_colour_manual(
       name = "",
       labels = `if`(!asym, c("Fast limb", "Slow limb"), c("Fast limb", "Slow limb", "Asymmetry")),
@@ -222,9 +222,9 @@ plot.protocol <- function(data.summary,
     # facet_wrap(~ Session) +
     labs(x = 'Trials', y = "Belt speeds (mm)")
   
-  if (dark) {
-    p = p + theme_black()
-  }
+  # if (dark) {
+  #   p = p + theme_black()
+  # }
   
   return(p)
 }

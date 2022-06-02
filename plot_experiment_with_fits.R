@@ -133,7 +133,7 @@ plot.experiment <-
                  alpha = 0.5) +
       
       scale_x_continuous(limits = trial.range, expand = expansion(mult = 0, add = 0)) +
-      theme_classic() +
+      `if`(dark, theme_black(), theme_classic()) +
       theme(legend.position = "none") +
       labs(x = 'Trials', y = "Step length asym. (mm)")
     return(p)

@@ -77,6 +77,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
       nrow = 1,
       labels = 'AUTO',
       align = "Vh",
+      label_colour = `if`(dark, "white", "black"),
       rel_widths = c(2, 2, 1.3, 1.3)
     )
     
@@ -86,6 +87,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
       plotlist = plotlist,
       ncol = 2,
       labels = c('E', 'F', 'G', 'H'),
+      label_colour = `if`(dark, "white", "black"),
       rel_heights = c(2.65,2),
       align = "Vh"
     )

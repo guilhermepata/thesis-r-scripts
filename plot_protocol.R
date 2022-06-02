@@ -4,6 +4,9 @@ plot.protocol <- function(data.summary,
                           group,
                           sessions = NULL,
                           legend = TRUE,
+                          red.blue = FALSE,
+                          # dark = FALSE,
+                          asym = FALSE,
                           pos = NULL) {
   legend = !legend
   if (is.null(sessions)) {
@@ -103,9 +106,9 @@ plot.protocol <- function(data.summary,
     ymax = ymax
   )
   
-  color.fast = darken(get_group_color(group))
-  color.slow = get_group_color(group)
-  
+  color.fast = `if`(!red.blue, darken(get_group_color(group)), 'red')
+  color.slow = `if`(!red.blue, get_group_color(group), "blue")
+  color.asym = `if`(dark, "white", "black")
   
   p = ggplot(data.summary) +
     
@@ -121,7 +124,7 @@ plot.protocol <- function(data.summary,
       ymax = split.shades.frame$ymax,
       fill = 'Split-belt'
       ),
-      alpha = 0.2
+      alpha = `if`(dark, .3, .3)
     ) +
     
     geom_point(
@@ -158,15 +161,42 @@ plot.protocol <- function(data.summary,
               aes(x = Trial, y = Fast, color = 'Fast limb'),
               # color = color.fast,
               linetype = 'dashed',
-              size = .5,) +
+              size = .5,)
     
     # geom_hline(
     #   yintercept = c(tied.speed),
     #   linetype = "dashed",
     #   alpha = 0.5
     # ) +
+    if (asym) {
+     p = p +
+       geom_point(
+        data = data.summary,
+        aes(
+          x = Trial,
+          y = Asym,
+          color = 'Asym'
+        ),
+        # color = color.fast,
+        # fill = color.fast,
+        size = 1.5,
+        shape = 16,
+      ) +
+        geom_line(data = data.summary,
+                  aes(x = Trial, y = Asym, color = 'Asym'),
+                  # color = color.fast,
+                  linetype = 'dashed',
+                  size = .5,) 
+        
+        # geom_hline(
+        #   yintercept = c(tied.speed),
+        #   linetype = "dashed",
+        #   alpha = 0.5
+        # ) +
+    }
     
-    scale_x_continuous(limits = trial.range, expand = expansion(mult = 0, add = 0)) +
+    p = p + 
+      scale_x_continuous(limits = trial.range, expand = expansion(mult = 0, add = 0)) +
     scale_y_continuous(
       breaks = c(slow.speed, tied.speed, fast.speed),
       expand = expansion(mult = 0.25)
@@ -174,13 +204,13 @@ plot.protocol <- function(data.summary,
     theme_classic() +
     scale_colour_manual(
       name = "",
-      labels = c("Fast limb", "Slow limb"),
-      values = c(color.fast, color.slow)
+      labels = `if`(!asym, c("Fast limb", "Slow limb"), c("Fast limb", "Slow limb", "Asymmetry")),
+      values = `if`(!asym, c(color.fast, color.slow), c(color.fast, color.slow, color.asym))
     ) +
     scale_fill_manual(
       name = "",
       labels = c("Split belt"),
-      values = c('black')
+      values = `if`(dark,c('gray'),c('black'))
     ) +
     theme(
       legend.position = pos,
@@ -192,20 +222,62 @@ plot.protocol <- function(data.summary,
     # facet_wrap(~ Session) +
     labs(x = 'Trials', y = "Belt speeds (mm)")
   
+  if (dark) {
+    p = p + theme_black()
+  }
+  
   return(p)
 }
 
 short.df = data.frame(Group = rep('Exp3:NotAtaxic:NoSwitch', 21),
                       Session = rep('S1', 21),
                       Trial = 1:21,
+                      Num = c(0:2,
+                              0:8,
+                              0:8),
                       Phase = c(rep('Baseline', 3),
                                 rep('Split', 9),
                                 rep('Washout', 9))
                       )
 
+example.curve = function(df, A = 6, r = 0.1, noise = 0.2) {
+  res = c()
+  adapt = function(x) {
+    return(-A*exp(-x*r))
+  }
+  B = adapt(max(filter(df, Phase == 'Split')$Num)) - (-A)
+  washout = function(x) {
+    return(B*exp(-x*r*2))
+  }
+  for (row in 1:nrow(df)) {
+    if (df[row,]$Phase == 'Baseline') {
+      res = c(res, 0)
+    } else if (df[row,]$Phase == 'Split') {
+      res = c(res, adapt(df[row,]$Num))
+    } else if (df[row,]$Phase == 'Washout') {
+      res = c(res, washout(df[row,]$Num))
+    }
+    
+  }
+  res = res + rnorm(length(res), sd=noise)
+  return(res)
+}
+
+short.df$Asym = example.curve(short.df, r = 0.4, noise = 0)
 
 (plot.short.protocol = plot.protocol(short.df,
-                                     'Exp3:NotAtaxic:NoSwitch', sessions=c('S1'), pos ='right'))
+                                     'Exp3:NotAtaxic:NoSwitch',
+                                     sessions=c('S1'), pos ='right', 
+                                     red.blue = TRUE))
+
+ggsave(
+  plot = plot.short.protocol,
+  paste("presentation_plots/", name, "_fig23_plot", ".png", sep = ""),
+  bg = 'transparent',
+  # device = cairo_pdf,
+  width = 4.75,
+  height = 2.8
+)
 
 
 (plot.exp3.noswitch.protocol = plot.protocol(mega.data.summary,

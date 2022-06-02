@@ -14,6 +14,7 @@ plot.change <-
            limited = FALSE,
            plot.ratio = FALSE,
            ratio.of.means = FALSE,
+           # dark = FALSE,
            show.legend = TRUE,
            types = c('Raw', 'Fit')) {
     df.animals = make_change_df_animals(
@@ -163,7 +164,7 @@ plot.change <-
         scale_color_manual(values = get_group_colors(groups), labels = get_group_labels(groups)) +
         scale_shape_manual(values = c(Raw = 17, Fit = 16), guide = "none") +
         
-        theme_classic() +
+        `if`(dark, theme_black(), theme_classic()) +
         theme(legend.position = `if`(show.legend, "right", "none")) +
         labs(
           x = `if`(
@@ -195,11 +196,13 @@ plot.change <-
         # ylim(-2, 2) +
         scale_color_manual(values = get_group_colors(groups)) +
         scale_fill_manual(values = get_group_colors(groups)) +
-        theme_classic() + theme(legend.position = "none")
+        `if`(dark, theme_black(), theme_classic()) + theme(legend.position = "none")
     }
     
     
-    
+    if (dark) {
+      p = p + theme_black()
+    }
     
     
     return(p)

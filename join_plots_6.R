@@ -44,7 +44,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
   }
   
   legend = cowplot::get_legend(plotlist[[2]] + theme(
-    plot.background = element_rect(fill = "white", color = "transparent"),
+    plot.background = element_rect(fill = "transparent", color = "transparent"),
     plot.margin = unit(x = c(0, 0, 0, 0), units = "mm"),
     legend.margin = margin(l = 0, unit = "mm"),
     legend.position = 'left',
@@ -58,31 +58,42 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
   toprow = cowplot::plot_grid(
     plotlist = list(aligned[[1]], plotlist[[2]] + theme(legend.position = "none"), legend),
     nrow = 1,
-    align = "vh",
+    # align = "vh",
     labels = c('A', 'B', ''),
     rel_widths = c(1.65, 1.65, .65)
-  ) + theme(plot.background = element_rect(fill = "white", color = "transparent"))
+  ) 
+  # + theme(plot.background = element_rect(fill = `if`(dark,"transparent","white"), color = "transparent"))
   bottomrow = cowplot::plot_grid(
     plotlist = list(aligned[[2]], plotlist[[4]], plotlist[[5]], plotlist[[6]]),
     nrow = 1,
-    align = "vh",
+    # align = "vh",
     labels = c('D', 'E', 'F', 'G')
   )
   
   (p = cowplot::plot_grid(
-    plotlist = align_plots(toprow, bottomrow, align = "v", axis = "l"),
+    plotlist = cowplot::align_plots(toprow, bottomrow, align = "v", axis = "l"),
     nrow = 2,
-    rel_heights = c(2, 1.3),
-    align = "Vh"
+    rel_heights = c(2, 1.3)
+    # align = "Vh"
   ))
   
-  ggsave(
-    plot = p,
-    paste("plots/", name, "_summary_plot", ".pdf", sep = ""),
-    device = cairo_pdf,
-    width = 8.27,
-    height = height
-  )
+  if (dark) {
+    ggsave(
+      plot = p,
+      paste("presentation_plots/", name, "_summary_plot", ".png", sep = ""),
+      bg = "transparent",
+      width = 8.27,
+      height = height
+    )
+  } else {
+    ggsave(
+      plot = p,
+      paste("plots/", name, "_summary_plot", ".pdf", sep = ""),
+      device = cairo_pdf,
+      width = 8.27,
+      height = height
+    )
+  }
   
   
   

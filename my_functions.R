@@ -556,3 +556,50 @@ rentention.values = function(data.split.summary,
   }
   return(values)
 }
+
+
+library(gridExtra)
+
+theme_black = function(base_size = 11, base_family = "") {
+  
+  theme_classic(base_size = base_size, base_family = base_family) %+replace%
+    
+    theme(
+      # Specify axis options
+      axis.line = element_line(color = "white"),
+      axis.text = element_text(color = "white"),  
+      axis.ticks = element_line(color = "white"),  
+      axis.title = element_text(color = "white"),  
+      # axis.title.y = element_text(color = "white", angle = 90),  
+      # axis.ticks.length = unit(0.3, "lines"),   
+      # Specify legend options
+      legend.background = element_rect(color = NA, fill = "transparent"),  
+      legend.key = element_rect(color = NA,  fill = "transparent"),  
+      # legend.key.size = unit(1.2, "lines"),  
+      # legend.key.height = NULL,  
+      # legend.key.width = NULL,      
+      legend.text = element_text(color = "white"),  
+      legend.title = element_text(color = "white"),  
+      # legend.position = "right",  
+      # legend.text.align = NULL,  
+      # legend.title.align = NULL,  
+      # legend.direction = "vertical",  
+      # legend.box = NULL, 
+      # Specify panel options
+      panel.background = element_rect(fill = "transparent", color  =  NA),  
+      panel.border = element_rect(fill = NA, color = NA),  
+      panel.grid.major = element_line(color = NA),  
+      panel.grid.minor = element_line(color = NA),  
+      # panel.margin = unit(0.5, "lines"),   
+      # Specify facetting options
+      strip.background = element_rect(fill = "grey30", color = "grey10"),  
+      strip.text.x = element_text(color = "white"),  
+      strip.text.y = element_text(color = "white",angle = -90),  
+      # Specify plot options
+      plot.background = element_rect(color = "transparent", fill = "transparent"),  
+      plot.title = element_text(color = "white"),  
+      # plot.spacing = unit(rep(1, 4), "lines")
+      
+    )
+  
+}

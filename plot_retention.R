@@ -115,7 +115,7 @@ plot.retention <- function(data.split.summary,
                linetype = "dashed",
                alpha = 0.5) +
     
-    theme_classic() + theme(legend.position = "none") +
+    `if`(dark, theme_black(), theme_classic()) + theme(legend.position = "none") +
     scale_fill_manual(values = get_group_colors(groups)) +
     scale_color_manual(values = get_group_colors(groups)) +
     labs(x = "Session", y = "Inter-section error reduction (mm)")

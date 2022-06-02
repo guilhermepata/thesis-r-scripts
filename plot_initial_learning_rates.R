@@ -65,7 +65,7 @@ plot.first.lr <- function(values,
                linetype = "dashed",
                alpha = 0.5) +
     xlim(xlim) +
-    theme_classic() + theme(legend.position = "none") +
+    `if`(dark, theme_black(), theme_classic()) + theme(legend.position = "none") +
     scale_fill_manual(values = get_group_colors(groups)) +
     scale_color_manual(values = get_group_colors(groups)) +
     labs(x = "Session", y = "1st trial learning rate (mm/s)")

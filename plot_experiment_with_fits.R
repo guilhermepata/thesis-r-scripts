@@ -44,7 +44,7 @@ plot.experiment <-
     
     p <- ggplot(data, aes(x = Trial)) +
       
-      geom_vline(xintercept = data.session.breaks - 0.5, alpha = 0.5) +
+      geom_vline(xintercept = data.session.breaks - 0.5, alpha = `if`(dark, 1, 0.5), color = `if`(dark, "white", "black")) +
       
       geom_rect(
         data = shades.frame,
@@ -52,7 +52,8 @@ plot.experiment <-
         xmax = shades.frame$xmax,
         ymin = shades.frame$ymin,
         ymax = shades.frame$ymax,
-        alpha = 0.2
+        alpha = 0.2,
+        fill= `if`(dark, "white", "black")
       )
     
     if (show.animals) {

@@ -79,15 +79,15 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
     # align = "Vh"
   ))
   
-  if (dark) {
+  if (!dark) {
     ggsave(
       plot = p,
-      paste("presentation_plots/", name, "_summary_plot", ".png", sep = ""),
+      paste("presentation_plots/", name, "_w_summary_plot", ".png", sep = ""),
       bg = "transparent",
       width = 8.27,
       height = height
     )
-  } else {
+  } else if (!dark) {
     ggsave(
       plot = p,
       paste("plots/", name, "_summary_plot", ".pdf", sep = ""),

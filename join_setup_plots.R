@@ -265,7 +265,7 @@ for (name in c('Exp3', 'Exp5', 'Exp4')) {
       width = 8.27,
       height = height
     )
-  } else {
+  } else if (!dark) {
     ggsave(
       plot = p,
       paste("plots/", name, "_setup_plot", ".pdf", sep = ""),

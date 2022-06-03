@@ -113,7 +113,7 @@ plot.protocol <- function(data.summary,
   p = ggplot(data.summary) +
     
     
-    geom_vline(xintercept = data.session.breaks - 0.5, alpha = 0.5) +
+    geom_vline(xintercept = data.session.breaks - 0.5, alpha = `if`(dark, 0.5, 0.5), color = `if`(dark, "white", "black")) +
     
     geom_rect(
       data = split.shades.frame,

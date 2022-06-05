@@ -12,7 +12,7 @@ source("my_functions.R")
   infer = TRUE
 ))
 
-plot.first.lr <- function(values,
+plot.first.lr.func <- function(values,
                           groups,
                           xlim = c('S1', 'S2', 'S3', 'S4', 'S5'),
                           draw.lines = FALSE) {
@@ -76,7 +76,7 @@ plot.first.lr <- function(values,
 if (name == 'Exp3') {
   groups = c('Exp3:NotAtaxic:NoSwitch', 'Exp3:NotAtaxic:Switch')
   
-  (plot.first.lr = plot.first.lr(first.lr.values,
+  (plot.first.lr = plot.first.lr.func(first.lr.values,
                                  groups = groups))
 }
 
@@ -85,7 +85,7 @@ if (name == 'Exp5') {
              'Exp5:NotAtaxic:NoSwitch',
              'Exp5:NotAtaxic:Switch')
   
-  (plot.first.lr = plot.first.lr(first.lr.values,
+  (plot.first.lr = plot.first.lr.func(first.lr.values,
                                  groups = groups))
 }
 
@@ -94,7 +94,7 @@ if (name == 'Exp4') {
              'Exp4:NotAtaxic:Switch',
              'Exp4:Ataxic:Switch')
   
-  (plot.first.lr = plot.first.lr(
+  (plot.first.lr = plot.first.lr.func(
     first.lr.values,
     groups = groups,
     xlim = c('S1', 'S2', 'S3', 'S5')

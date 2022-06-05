@@ -74,8 +74,8 @@ if (!exists("is.built") || !is.built) {
   }
   
   mega.data$Group = relevel(mega.data$Group, 'Exp4:NotAtaxic:Switch')
-  mega.data$Group = relevel(mega.data$Group, 'Exp5:NotAtaxic:Switch')
   mega.data$Group = relevel(mega.data$Group, 'Exp5:NotAtaxic:NoSwitch')
+  mega.data$Group = relevel(mega.data$Group, 'Exp5:NotAtaxic:Switch')
   mega.data$Group = relevel(mega.data$Group, 'Exp3:NotAtaxic:Switch')
   mega.data$Group = relevel(mega.data$Group, 'Exp3:NotAtaxic:NoSwitch')
   
@@ -157,6 +157,34 @@ if (!exists("is.built") || !is.built) {
   
   mega.data.aux = rbind(mega.data.split, mega.data.washout, mega.data.baseline, mega.data.intersplit)
   mega.data = arrange(mega.data.aux, Experiment, Group, Animal, Trial)
+  
+  learning.rate.values = summary(emtrends(
+    model.split,
+    ~ Session * Group,
+    var = 'Num',
+    adjust = 'none'
+  ),
+  infer = TRUE)
+  
+  groups = unique(mega.data$Group)
+  
+  df.animals = make_change_df_animals(
+    mega.data.split,
+    mega.data.washout,
+    mega.data.summary,
+    model.split,
+    model.washout,
+    groups,
+    # sessions.split
+  )
+  
+  df.fit = make_change_df(
+    mega.data.summary,
+    model.split,
+    model.washout,
+    groups,
+    # sessions.split
+  )
   
   is.built = TRUE
   

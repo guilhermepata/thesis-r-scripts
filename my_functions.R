@@ -1,6 +1,7 @@
 library(gsubfn)
 library(pracma)
 library(lme4)
+source("plot_functions.R")
 
 get_plot_limits <- function(plot) {
   gb = ggplot_build(plot)
@@ -16,8 +17,8 @@ get_plot_limits <- function(plot) {
   )
 }
 
-equal_y_limits <- function(...) {
-  plots <- list(...)
+equal_y_limits <- function(..., plots = NULL) {
+  if (is.null(plots)) {plots <- list(...)}
   ymin = c()
   ymax = c()
   for (plot in plots) {
@@ -31,8 +32,8 @@ equal_y_limits <- function(...) {
 }
 
 
-equal_x_limits <- function(...) {
-  plots <- list(...)
+equal_x_limits <- function(..., plots = NULL) {
+  if(is.null(plots)) {plots <- list(...)}
   xmin = c()
   xmax = c()
   for (plot in plots) {
@@ -45,9 +46,9 @@ equal_x_limits <- function(...) {
   c(xmin, xmax)
 }
 
-set_equal_y_lims <- function(...) {
-  ylim = equal_y_limits(...)
-  plots = list(...)
+set_equal_y_lims <- function(..., plots = NULL) {
+  if(is.null(plots)) {plots <- list(...)}
+  ylim = equal_y_limits(plots = plots)
   for (i in 1:length(plots)) {
     plot = plots[[i]]
     plot <- plot + ylim(ylim)
@@ -57,9 +58,9 @@ set_equal_y_lims <- function(...) {
 }
 
 
-set_equal_x_lims <- function(...) {
-  xlim = equal_x_limits(...)
-  plots = list(...)
+set_equal_x_lims <- function(..., plots = NULL) {
+  if(is.null(plots)) {plots <- list(...)}
+  xlim = equal_x_limits(plots = plots)
   for (i in 1:length(plots)) {
     plot = plots[[i]]
     plot <- plot + xlim(xlim)
@@ -289,9 +290,9 @@ get_group_color <- function(group) {
       return('tan2')
     }
     else if (name == 'Exp5') {
-      return('sienna1')
+      return('turquoise3')
     } else {
-      return('lightsalmon2')
+      return('firebrick1')
     }
   } else if (group == 'Ataxic:Switch') {
     return('lightslateblue')
@@ -586,7 +587,7 @@ theme_black = function(base_size = 11, base_family = "") {
       # legend.direction = "vertical",  
       # legend.box = NULL, 
       # Specify panel options
-      panel.background = element_rect(fill = "transparent", color  =  NA),  
+      panel.background = element_rect(fill = "black", color  =  NA),  
       panel.border = element_rect(fill = NA, color = NA),  
       panel.grid.major = element_line(color = NA),  
       panel.grid.minor = element_line(color = NA),  
@@ -596,7 +597,7 @@ theme_black = function(base_size = 11, base_family = "") {
       strip.text.x = element_text(color = "white"),  
       strip.text.y = element_text(color = "white",angle = -90),  
       # Specify plot options
-      plot.background = element_rect(color = "transparent", fill = "transparent"),  
+      plot.background = element_rect(color = "transparent", fill = "black"),  
       plot.title = element_text(color = "white"),  
       # plot.spacing = unit(rep(1, 4), "lines")
       
